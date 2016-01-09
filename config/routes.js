@@ -33,7 +33,7 @@ module.exports = function (mongoose, express, app, db) {
 
     apiRoutes.get('/article/:articleId?', ArticleController.get);
     apiRoutes.get('/file/:fileId', utils.requiredParams('fileId'), FileController.redirect);
-    apiRoutes.get('/comment/:commentId?', utils.requiredParams('commentId'), CommentController.get);
+    apiRoutes.get('/comment/:commentId?', CommentController.get);
 
     // Middleware to check user auth
     apiRoutes.use(function (req, res, next) {
