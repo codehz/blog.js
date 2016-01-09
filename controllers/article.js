@@ -40,13 +40,11 @@ module.exports = function (mongoose, config, db) {
             })
         },
         delete(req, res) {
-            db.Article.findOne({ id: req.params.articleId, user_id: req.user.id }, (err, article) => {
+            db.Article.findOne({ id: req.params.articleId }, (err, article) => {
                 if (err) return utils.error(res, 422, err);
+                if (article.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
                 if (!article) return utils.error(res, 404);
-                article.remove(err => {
-                    if (err) return utils.error(res, 422);
-                    return utils.success(res);
-                });
+                article.remove(err => err ? utils.error(res, 422) : utils.success(res));
             })
         },
         update(req, res) {
