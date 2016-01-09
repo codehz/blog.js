@@ -1,16 +1,16 @@
 'use strict'
 
 module.exports = function (mongoose) {
-    let bcrypt = require('bcrypt'), Schema = mongoose.Schema;
+    const bcrypt = require('bcrypt'), Schema = mongoose.Schema;
     var userSchema = new Schema({
-        id:         Number,
-        name:       { type: String, required: true },
-        password:   { type: String, required: true },
-        phone:      String,
-        email:      { type: String, required: true, index: { unique: true }},
+        id: Number,
+        name: { type: String, required: true },
+        password: { type: String, required: true },
+        phone: String,
+        email: { type: String, required: true, index: { unique: true } },
         permission: Number
     });
-    
+
     userSchema.pre('save', next => {
         let user = this;
         if (!user.isModified('password')) return next();
@@ -20,10 +20,10 @@ module.exports = function (mongoose) {
             next();
         });
     });
-    
+
     userSchema.methods.comparePassword = (passwordToCompareWith, next) => {
         bcrypt.compare(passwordToCompareWith, this.password, (err, valid) => {
-            if (err) return next (err);
+            if (err) return next(err);
             next(null, valid);
         });
     };
