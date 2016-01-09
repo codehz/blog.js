@@ -87,11 +87,11 @@ module.exports = function (mongoose, config, db) {
                 queryRequest.sort(sort);
             }
 
-            queryRequest.populate('user').populate('target_article').populate('target').exec((err, dbResponse) => {
+            queryRequest.populate({path: 'user', select: 'id name email'}).exec((err, dbResponse) => {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
                 console.log('response', dbResponse);
-                utils.responseData(res, dbResponse.count, dbResponse);
+                utils.responseData(res, dbResponse.count, dbResponse.map(comment => commentResponse(comment)));
             })
         }
     }
