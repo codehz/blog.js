@@ -1,0 +1,20 @@
+{
+  "name": "blogjs",
+  "version": "1.0.0",
+  "author": "CodeHz <CodeHz@Outlook.com>",
+  "main": "app.js",
+  "scripts": {
+    "start": "clear;node app.js"
+  },
+  "dependencies": {
+    "express": "^4",
+    "mongoose": "~3.6.14",
+    "bcrypt": "*",
+    "jsonwebtoken": "*",
+    "body-parser": "*",
+    "morgan": "*",
+    "multer": "*",
+    "express-validator": "^2"
+  },
+  "license": "MIT"
+}
