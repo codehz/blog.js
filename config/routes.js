@@ -7,6 +7,7 @@ module.exports = function (mongoose, express, app, db) {
         , config = require('../config/config')
         , UserController = require('../controllers/user')(mongoose, config, db)
         , ArticleController = require('../controllers/article.js')(mongoose, config, db)
+        , FileController = require('../controllers/file.js')(mongoose, config, db)
         , apiRoutes = express.Router();
     // const fileUpload = multer({
     //     dest: config.uploadPath
@@ -23,6 +24,8 @@ module.exports = function (mongoose, express, app, db) {
         utils.checkPassword, utils.validateEmail, UserController.login);
     apiRoutes.post('/register', utils.requiredFields("name password email phone"),
         utils.checkPassword, utils.validateEmail, utils.validatePhone, UserController.register);
+
+    apiRoutes.get('/article/:articleId?', ArticleController.get);
 
     // Middleware to check user auth
     apiRoutes.use(function (req, res, next) {
@@ -54,9 +57,11 @@ module.exports = function (mongoose, express, app, db) {
 
     apiRoutes.post('/article', utils.requiredBody('title'), utils.requiredBody('content'),
         ArticleController.create);
-    apiRoutes.delete('/article/:articleId', utils.requiredParams('aeticleId'),
+    apiRoutes.delete('/article/:articleId', utils.requiredParams('articleId'),
         ArticleController.delete);
-    apiRoutes.put('/article/:articleId', utils.requiredParams('aeticleId'),
+    apiRoutes.put('/article/:articleId', utils.requiredParams('articleId'),
         ArticleController.update);
-    apiRoutes.get('/article/:articleId?', ArticleController.get);
+        
+    apiRoutes.post('/file', FileController.upload);
+    apiRoutes.delete('/file/:fileId', utils.requiredParams('fileId'), FileController.delete);
 }

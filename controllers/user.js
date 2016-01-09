@@ -108,7 +108,7 @@ module.exports = function (mongoose, config, db) {
 
             // Need to retrieve a new user id
             db.Sequence.getNextSequence("users", function (err, nextUserId) {
-                if (err) throw err;
+                if (err) return utils.error(res, 422, err);
 
                 var newUser = db.User({
                     id: nextUserId,

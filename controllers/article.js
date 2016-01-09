@@ -23,7 +23,7 @@ module.exports = function (mongoose, config, db) {
     return {
         create(req, res) {
             db.Sequence.getNextSequence("articles", (err, nextArticleId) => {
-                if (err) throw err;
+                if (err) return utils.error(res, 422, err);
                 const keyword = req.body.keyword || req.body.title;
                 const article = db.Article({
                     id: nextArticleId,
@@ -33,7 +33,7 @@ module.exports = function (mongoose, config, db) {
                     content: req.body.content,
                     keywords: keyword.split(',')
                 });
-                article.save((err, article) => err ?
+                article.save(err => err ?
                     utils.error(res, 422, err.message) :
                     utils.success(res, "update success!")
                     );
@@ -41,7 +41,7 @@ module.exports = function (mongoose, config, db) {
         },
         delete(req, res) {
             db.Article.findOne({ id: req.params.articleId, user_id: req.user.id }, (err, article) => {
-                if (err) return utils.error(res, 422);
+                if (err) return utils.error(res, 422, err);
                 if (!article) return utils.error(res, 404);
                 article.remove(err => {
                     if (err) return utils.error(res, 422);
@@ -51,7 +51,7 @@ module.exports = function (mongoose, config, db) {
         },
         update(req, res) {
             db.Article.findOne({ id: req.params.articleId, user_id: req.user.id }, (err, article) => {
-                if (err) return utils.error(res, 422);
+                if (err) return utils.error(res, 422, err);
                 if (!article) return utils.error(res, 404);
 
                 if (req.body.title) article.title = req.body.title;
