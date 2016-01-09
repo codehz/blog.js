@@ -17,7 +17,7 @@ module.exports = function(mongoose) {
      * @param cb
      */
     sequenceSchema.statics.getNextSequence = (name, cb) => {
-        this.model('Seqs').findOneAndUpdate(
+        mongoose.model('Seqs').findOneAndUpdate(
             { _id: name },
             { $inc:   { seq: 1 } },
             { upsert: true },
