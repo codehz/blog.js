@@ -61,7 +61,11 @@ module.exports = function (mongoose, config, db) {
                     && comment.target_article.user_id != req.user.id
                     && comment.target.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
                 if (!comment) return utils.error(res, 404);
-                comment.remove(err => err ? utils.error(res, 422) : utils.success(res));
+                db.Comment.remove({ id: comment.target_id }, err => err
+                    ? utils.error(res, 422)
+                    : comment.remove(err => err
+                        ? utils.error(res, 422)
+                        : utils.success(res, "delete successful")));
             })
         },
 
@@ -88,7 +92,7 @@ module.exports = function (mongoose, config, db) {
                 queryRequest.sort(sort);
             }
 
-            queryRequest.populate({path: 'user', select: 'id name email'}).exec((err, dbResponse) => {
+            queryRequest.populate({ path: 'user', select: 'id name email' }).exec((err, dbResponse) => {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
                 utils.responseData(res, dbResponse.count, dbResponse.map(comment => commentResponse(comment)));
