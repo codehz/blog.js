@@ -84,7 +84,7 @@ module.exports = function (mongoose, config, db) {
                 if (req.query.ext) query["ext"] = req.query.ext;
             }
             
-            const queryRequest = db.find(query);
+            const queryRequest = db.File.find(query);
             
             if (sortBy) {
                 var sort = {};
@@ -101,7 +101,7 @@ module.exports = function (mongoose, config, db) {
         
         head(req, res) {
             const id = req.params.fileId;
-            db.findOne({id}, (err, file) => {
+            db.File.findOne({id}, (err, file) => {
                 if (err) return utils.error(res, 422, err);
                 if (!file) return utils.error(res, 404);
                 res.redirect(301, "http://" + config.host + (config.port == 80 ? "" : ":" + config.port)
