@@ -54,8 +54,9 @@ module.exports = function (mongoose, config, db) {
         },
 
         delete(req, res) {
-            db.Comment.findOne({ id: req.params.commentId }).populate('target_article').populate('target').exec((err, comment) => {
+            db.Comment.findOne({ id: req.params.commentId }).exec((err, comment) => {
                 if (err) return utils.error(res, 422, err);
+                if (!comment) return utils.error(res, 404);
                 if (comment.user_id != req.user.id
                     || comment.target_article.user_id != req.user.id
                     || comment.target.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
