@@ -21,9 +21,9 @@ module.exports = function (mongoose, config, db) {
     }
 
     function createComment(res, content, user, target_article, target) {
-        db.Sequence.getNextSequence('comment', (err, nextCommentId) => {
+        db.Sequence.getNextSequence('comment', (err, id) => {
             const comment = db.Comment({
-                nextCommentId,
+                id,
                 user_id: user.id,
                 user,
                 target_article_id: target_article.id,
