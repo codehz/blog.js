@@ -5,15 +5,16 @@ module.exports = function (mongoose, config, db) {
         , fs = require('fs')
         , path = require('path');
 
-    function fileResponse(file) {
+    function fileResponse(file, _user) {
+        let user = _user || file.user;
         return {
             id: file.id,
             name: file.name,
             user_id: file.user_id,
             user: {
-                id: file.user.id,
-                email: file.user.email,
-                name: file.user.name
+                id: user.id,
+                email: user.email,
+                name: user.name
             },
             path: file.path
         };
@@ -45,7 +46,7 @@ module.exports = function (mongoose, config, db) {
                     });
                     file.save(err => err ?
                         utils.error(res, 422, err.message) :
-                        utils.responseData(res, "update success!", fileResponse(file)));
+                        utils.responseData(res, "update success!", fileResponse(file, req.user)));
                 });
             } else {
                 utils.error(res, 422, "Are you upload some files?");
