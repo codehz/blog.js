@@ -20,7 +20,7 @@ module.exports = function (mongoose, config, db) {
         }
     }
 
-    function createComment(user, article, target, content, res) {
+    function createComment(res, content, user, article, target) {
         db.Sequence.getNextSequence('comment', (err, nextCommentId) => {
             const comment = db.Comment({
                 nextCommentId,
@@ -45,11 +45,10 @@ module.exports = function (mongoose, config, db) {
                 if (err) return utils.error(res, 422, err);
                 if (!article) return utils.error(res, 404);
                 if (req.body.target) {
-                    db.Comment.findOne({ id: req.body.target }, (err, target) => {
-                        createComment(req.user, article, target, res);
-                    });
+                    db.Comment.findOne({ id: req.body.target }, (err, target) =>
+                        createComment(res, req.body.content, req.user, article, target));
                 } else {
-                    createComment(req.user, article, undefined, res);
+                    createComment(res, req.body.content, req.user, article);
                 }
             });
         },
@@ -64,12 +63,12 @@ module.exports = function (mongoose, config, db) {
                 comment.remove(err => err ? utils.error(res, 422) : utils.success(res));
             })
         },
-        
+
         get(req, res) {
             const id = req.params.commentId;
             let query = {};
             let sortBy = null;
-            
+
             if (id) {
                 query = { id };
             } else {
@@ -80,14 +79,14 @@ module.exports = function (mongoose, config, db) {
                 if (req.query.target_article_id) query["target_article_id"] = req.query.target_article_id;
                 if (req.query.target_id) query["target_id"] = req.query.target_id;
             }
-            
+
             const queryRequest = db.Comment.find(query);
             if (sortBy) {
                 var sort = {};
                 sort[sortBy["order_by"]] = sortBy["order_type"] === "asc" ? "ascending" : "descending";
                 queryRequest.sort(sort);
             }
-            
+
             queryRequest.populate('target_article').populate('target').exec((err, dbResponse) => {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
