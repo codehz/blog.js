@@ -23,14 +23,11 @@ module.exports = function (mongoose, config, db) {
     return {
         upload(req, res) {
             if (req.file && req.file.originalname) {
-                if (req.file.size >= config.fileUploadLimit) {
-                    return utils.error(res, 422, "The file " + req.file.originalname + " is too big", "image");
-                }
                 let ext = path.extname(req.file.originalname);
                 let tmp_path = req.file.path;
                 db.Sequence.getNextSequence('files', (err, nextFileId) => {
                     if (err) return utils.error(res, 422, err);
-                    let target_path = req.file.destination + '/' + nextFileId + ext;
+                    let target_path = config.rootPath + config.uploadDir + '/' + nextFileId + ext;
                     fs.rename(tmp_path, target_path, err => {
                         if (err) throw err;
                         fs.unlink(tmp_path, function () {
