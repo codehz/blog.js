@@ -2,16 +2,16 @@
 
 module.exports = function (mongoose, express, app, db) {
     const jwt = require('jsonwebtoken')
-    // , multer = require('multer')
+        , multer = require('multer')
         , utils = require('../lib/utils')()
         , config = require('../config/config')
         , UserController = require('../controllers/user')(mongoose, config, db)
         , ArticleController = require('../controllers/article.js')(mongoose, config, db)
         , FileController = require('../controllers/file.js')(mongoose, config, db)
         , apiRoutes = express.Router();
-    // const fileUpload = multer({
-    //     dest: config.uploadPath
-    // });
+    const fileUpload = multer({
+        dest: config.uploadPath
+    });
 
     app.use('/api', apiRoutes);
     app.use((req, res, next) => {
@@ -61,7 +61,7 @@ module.exports = function (mongoose, express, app, db) {
         ArticleController.delete);
     apiRoutes.put('/article/:articleId', utils.requiredParams('articleId'),
         ArticleController.update);
-        
-    apiRoutes.post('/file', FileController.upload);
+
+    apiRoutes.post('/file', fileUpload.single('file'), FileController.upload);
     apiRoutes.delete('/file/:fileId', utils.requiredParams('fileId'), FileController.delete);
 }
