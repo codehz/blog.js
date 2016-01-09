@@ -33,6 +33,7 @@ module.exports = function (mongoose, config, db) {
                     content: req.body.content,
                     keyword: keyword.split(',')
                 });
+                console.log(article);
                 article.save((err, article) => err ?
                     utils.error(res, 422, err.message) :
                     utils.success(res, "update success!")
