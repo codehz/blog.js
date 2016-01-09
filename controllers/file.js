@@ -99,7 +99,7 @@ module.exports = function (mongoose, config, db) {
             })
         },
         
-        head(req, res) {
+        redirect(req, res) {
             const id = req.params.fileId;
             db.File.findOne({id}, (err, file) => {
                 if (err) return utils.error(res, 422, err);
