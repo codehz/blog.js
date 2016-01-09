@@ -2,15 +2,15 @@
 
 module.exports = function (mongoose, express, app, db) {
     const jwt = require('jsonwebtoken')
-        , multer = require('multer')
+    // , multer = require('multer')
         , utils = require('../lib/utils')()
         , config = require('../config/config')
         , UserController = require('../controllers/user')(mongoose, config, db)
         , ArticleController = require('../controllers/article.js')(mongoose, config, db)
         , apiRoutes = express.Router();
-    const fileUpload = multer({
-        dest: config.uploadPath
-    });
+    // const fileUpload = multer({
+    //     dest: config.uploadPath
+    // });
 
     app.use('/api', apiRoutes);
     app.use((req, res, next) => {
@@ -31,13 +31,13 @@ module.exports = function (mongoose, express, app, db) {
 
         // Decode token
         if (token) {
-            jwt.verify(token, app.get('secret'), function (err, decoded) {
+            jwt.verify(token, app.get('secret'), (err, decoded) => {
                 if (err) {
                     return utils.error(res, 401, err);
                 } else {
                     // Save to request for use in other routes
                     req.decoded = decoded;
-                    UserController._check(req, (user) => {
+                    UserController._check(req, user => {
                         if (user) {
                             req.user = user;
                             console.log("Checked", user);
@@ -51,4 +51,12 @@ module.exports = function (mongoose, express, app, db) {
             return utils.error(res, 401, "No Token");
         }
     });
+
+    apiRoutes.post('/article', utils.requiredBody('title'), utils.requiredBody('content'),
+        ArticleController.create);
+    apiRoutes.delete('/article/:articleId', utils.requiredParams('aeticleId'),
+        ArticleController.delete);
+    apiRoutes.put('/article/:articleId', utils.requiredParams('aeticleId'),
+        ArticleController.update);
+    apiRoutes.get('/article/:articleId?', ArticleController.get);
 }
