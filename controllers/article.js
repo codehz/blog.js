@@ -9,6 +9,7 @@ module.exports = function (mongoose, config, db) {
             id: article.id,
             created_at: article.created_at,
             title: article.title,
+            user_id: article.user_id,
             user: {
                 id: user.id,
                 name: user.name,
@@ -23,16 +24,18 @@ module.exports = function (mongoose, config, db) {
         create(req, res) {
             db.Sequence.getNextSequence("articles", (err, nextArticleId) => {
                 if (err) throw err;
+                const keyword = req.body.keyword || req.body.title;
                 const article = db.Article({
                     id: nextArticleId,
                     title: req.body.title,
                     user_id: req.user.id,
                     user: req.user,
-                    content: req.body.content
+                    content: req.body.content,
+                    keyword: keyword.split(',')
                 });
-                article.save((err, newItem) => err ?
+                article.save((err, article) => err ?
                     utils.error(res, 422, err.message) :
-                    utils.success(res, articleResponse(newItem, req.user))
+                    utils.success(res, articleResponse(article))
                     );
             })
         },
@@ -53,6 +56,7 @@ module.exports = function (mongoose, config, db) {
 
                 if (req.body.title) article.title = req.body.title;
                 if (req.body.content) article.price = req.body.content;
+                if (req.body.keyword) article.keyword = req.body.keyword.split(',');
 
                 article.save((err, article) => utils.success(res, articleResponse(article)));
             });
