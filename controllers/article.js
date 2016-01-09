@@ -15,7 +15,7 @@ module.exports = function (mongoose, config, db) {
                 name: user.name,
                 email: user.email
             },
-            keyword: article.keyword,
+            keywords: article.keywords,
             content: article.content
         }
     }
@@ -31,9 +31,8 @@ module.exports = function (mongoose, config, db) {
                     user_id: req.user.id,
                     user: req.user,
                     content: req.body.content,
-                    keyword: keyword.split(',')
+                    keywords: keyword.split(',')
                 });
-                console.log(req.body, keyword);
                 article.save((err, article) => err ?
                     utils.error(res, 422, err.message) :
                     utils.success(res, "update success!")
