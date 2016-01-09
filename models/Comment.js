@@ -13,5 +13,5 @@ module.exports = function (mongoose) {
         target: { type: Schema.Types.ObjectId, ref: 'Comment' },
         content: { type: String, required: true }
     });
-    return commentScheme;
+    return mongoose.model('Comment', commentScheme);
 }
