@@ -16,7 +16,7 @@ module.exports = function (mongoose, config, db) {
                 email: user.email,
                 name: user.name
             },
-            path: file.path
+            ext: file.ext
         };
     }
 
@@ -55,7 +55,7 @@ module.exports = function (mongoose, config, db) {
                 if (err) return utils.error(res, 422, err);
                 if (!file) return utils.error(res, 404);
                 if (file.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
-                let fileName = config.uploadPath + "/" + file.path;
+                let fileName = config.uploadPath + "/" + file.id + file.ext;
                 fs.exists(fileName, exists => {
                     if (exists) {
                         fs.unlink(fileName, err => err ?
@@ -105,7 +105,7 @@ module.exports = function (mongoose, config, db) {
                 if (err) return utils.error(res, 422, err);
                 if (!file) return utils.error(res, 404);
                 res.redirect(301, "http://" + config.host + (config.port == 80 ? "" : ":" + config.port)
-                    + config.uploadDir + "/" + file.path);
+                    + config.uploadDir + "/" + file.id + file.ext);
             })
         }
     }
