@@ -35,7 +35,7 @@ module.exports = function (mongoose, config, db) {
                 });
                 article.save((err, article) => err ?
                     utils.error(res, 422, err.message) :
-                    utils.success(res, articleResponse(article))
+                    utils.success(res, "update success!")
                     );
             })
         },
@@ -88,7 +88,7 @@ module.exports = function (mongoose, config, db) {
             queryRequest.populate("user").exec((err, dbResponse) => {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
-                utils.success(res, dbResponse.map(article => articleResponse(article)));
+                utils.responseData(res, dbResponse.count, dbResponse.map(article => articleResponse(article)));
             })
         }
     }
