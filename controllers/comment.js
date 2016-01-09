@@ -87,7 +87,7 @@ module.exports = function (mongoose, config, db) {
                 queryRequest.sort(sort);
             }
 
-            queryRequest.populate('target_article').populate('target').exec((err, dbResponse) => {
+            queryRequest.populate('user').populate('target_article').populate('target').exec((err, dbResponse) => {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
                 utils.responseData(res, dbResponse.count, dbResponse.map(article => commentResponse(article)));
