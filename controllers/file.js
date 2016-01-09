@@ -27,7 +27,7 @@ module.exports = function (mongoose, config, db) {
                 let tmp_path = req.file.path;
                 db.Sequence.getNextSequence('files', (err, nextFileId) => {
                     if (err) return utils.error(res, 422, err);
-                    let target_path = config.rootPath + config.uploadDir + '/' + nextFileId + ext;
+                    let target_path = config.root + config.uploadDir + '/' + nextFileId + ext;
                     fs.rename(tmp_path, target_path, err => {
                         if (err) throw err;
                         fs.unlink(tmp_path, function () {
