@@ -20,14 +20,14 @@ module.exports = function (mongoose, config, db) {
         }
     }
 
-    function createComment(res, content, user, article, target) {
+    function createComment(res, content, user, target_article, target) {
         db.Sequence.getNextSequence('comment', (err, nextCommentId) => {
             const comment = db.Comment({
                 nextCommentId,
                 user_id: user.id,
                 user,
-                target_article_id: article.id,
-                article,
+                target_article_id: target_article.id,
+                target_article,
                 target_id: target ? target.id : 0,
                 target,
                 content
@@ -41,14 +41,14 @@ module.exports = function (mongoose, config, db) {
 
     return {
         create(req, res) {
-            db.Article.findOne({ id: req.body.article }, (err, article) => {
+            db.Article.findOne({ id: req.body.article }, (err, target_article) => {
                 if (err) return utils.error(res, 422, err);
-                if (!article) return utils.error(res, 404);
+                if (!target_article) return utils.error(res, 404);
                 if (req.body.target) {
                     db.Comment.findOne({ id: req.body.target }, (err, target) =>
-                        createComment(res, req.body.content, req.user, article, target));
+                        createComment(res, req.body.content, req.user, target_article, target));
                 } else {
-                    createComment(res, req.body.content, req.user, article);
+                    createComment(res, req.body.content, req.user, target_article);
                 }
             });
         },
