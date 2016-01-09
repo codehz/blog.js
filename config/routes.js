@@ -10,7 +10,12 @@ module.exports = function (mongoose, express, app, db) {
         , FileController = require('../controllers/file.js')(mongoose, config, db)
         , apiRoutes = express.Router();
     const fileUpload = multer({
-        dest: config.uploadPath
+        dest: config.uploadPath,
+        limits: {
+            fields: 1,
+            files: 1,
+            fileSize: config.fileUploadLimit
+        }
     });
 
     app.use('/api', apiRoutes);
