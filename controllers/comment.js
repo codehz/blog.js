@@ -91,7 +91,7 @@ module.exports = function (mongoose, config, db) {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
                 console.log('response', dbResponse);
-                utils.responseData(res, dbResponse.count, dbResponse.map(article => commentResponse(article)));
+                utils.responseData(res, dbResponse.count, dbResponse);
             })
         }
     }
