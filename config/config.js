@@ -6,7 +6,7 @@ let path = require('path')
     , env = process.env.NODE_ENV || 'development'
     , secret = 'OVERLOAD_CODE_HZ_OPNOTPERMIT_FBR'
     , uploadDir = '/uploads'
-    , uploadPath = '/tmp'
+    , uploadPath = rootPath + uploadDir
     , fileUploadLimit = 10485760 // 10 MB
 ;
 let config = {

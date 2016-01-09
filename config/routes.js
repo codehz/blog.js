@@ -10,7 +10,7 @@ module.exports = function (mongoose, express, app, db) {
         , FileController = require('../controllers/file.js')(mongoose, config, db)
         , apiRoutes = express.Router();
     const fileUpload = multer({
-        dest: config.uploadPath,
+        dest: '/tmp',
         limits: {
             fields: 1,
             files: 1,
@@ -31,6 +31,7 @@ module.exports = function (mongoose, express, app, db) {
         utils.checkPassword, utils.validateEmail, utils.validatePhone, UserController.register);
 
     apiRoutes.get('/article/:articleId?', ArticleController.get);
+    apiRoutes.get('/file/:fileId?', utils.requiredParams('fileId'), FileController.get)
 
     // Middleware to check user auth
     apiRoutes.use(function (req, res, next) {

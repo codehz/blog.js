@@ -27,7 +27,7 @@ module.exports = function (mongoose, config, db) {
                 let tmp_path = req.file.path;
                 db.Sequence.getNextSequence('files', (err, nextFileId) => {
                     if (err) return utils.error(res, 422, err);
-                    let target_path = config.root + config.uploadDir + '/' + nextFileId + ext;
+                    let target_path = config.uploadPath + '/' + nextFileId + ext;
                     fs.rename(tmp_path, target_path, err => {
                         if (err) throw err;
                         fs.unlink(tmp_path, function () {
@@ -51,22 +51,30 @@ module.exports = function (mongoose, config, db) {
         },
 
         delete(req, res) {
-            db.File.findOne({ id: req.params.fileId, user_id: req.user.id })
-                .exec((err, file) => {
-                    if (err) return utils.error(res, 422, err);
-                    if (!file) return utils.error(res, 404);
-                    if (file.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
-                    let fileName = config.uploadPath + "/" + file.path
-                    fs.exists(fileName, exists => {
-                        if (exists) {
-                            fs.unlink(fileName, err => err ?
-                                utils.error(res, 422, err) :
-                                utils.success(res, "delete successful!"));
-                        } else {
-                            utils.error(res, 404);
-                        }
-                    });
+            db.File.findOneAndRemove({ id: req.params.fileId }, (err, file) => {
+                if (err) return utils.error(res, 422, err);
+                if (!file) return utils.error(res, 404);
+                if (file.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
+                let fileName = config.uploadPath + "/" + file.path;
+                fs.exists(fileName, exists => {
+                    if (exists) {
+                        fs.unlink(fileName, err => err ?
+                            utils.error(res, 422, err) :
+                            utils.success(res, "delete successful!"));
+                    } else {
+                        utils.error(res, 404);
+                    }
                 });
+            });
+        },
+
+        get(req, res) {
+            db.File.findOne({ id: req.params.fileId }, (err, file) => {
+                if (err) return utils.error(res, 422, err);
+                if (!file) return utils.error(res, 404);
+                res.redirect(301, "http://" + config.host + (config.port == 80 ? "" : ":" + config.port)
+                    + config.uploadDir + "/" + file.path);
+            })
         }
     }
 }
