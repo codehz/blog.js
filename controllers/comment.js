@@ -58,8 +58,8 @@ module.exports = function (mongoose, config, db) {
                 if (err) return utils.error(res, 422, err);
                 if (!comment) return utils.error(res, 404);
                 if (comment.user_id != req.user.id
-                    || comment.target_article.user_id != req.user.id
-                    || comment.target.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
+                    && comment.target_article.user_id != req.user.id
+                    && comment.target.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
                 if (!comment) return utils.error(res, 404);
                 comment.remove(err => err ? utils.error(res, 422) : utils.success(res));
             })
