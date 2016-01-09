@@ -11,7 +11,7 @@ module.exports = function (mongoose) {
         permission: Number
     });
 
-    userSchema.pre('save', next => {
+    userSchema.pre('save', function (next) {
         let user = this;
         if (!user.isModified('password')) return next();
         bcrypt.hash(user.password, bcrypt.genSaltSync(), (err, hash) => {
@@ -21,7 +21,7 @@ module.exports = function (mongoose) {
         });
     });
 
-    userSchema.methods.comparePassword = (passwordToCompareWith, next) => {
+    userSchema.methods.comparePassword = function (passwordToCompareWith, next) {
         bcrypt.compare(passwordToCompareWith, this.password, (err, valid) => {
             if (err) return next(err);
             next(null, valid);
