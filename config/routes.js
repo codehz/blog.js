@@ -31,7 +31,7 @@ module.exports = function (mongoose, express, app, db) {
         utils.checkPassword, utils.validateEmail, utils.validatePhone, UserController.register);
 
     apiRoutes.get('/article/:articleId?', ArticleController.get);
-    apiRoutes.get('/file/:fileId?', utils.requiredParams('fileId'), FileController.get)
+    apiRoutes.head('/file/:fileId', utils.requiredParams('fileId'), FileController.head);
 
     // Middleware to check user auth
     apiRoutes.use(function (req, res, next) {
@@ -70,4 +70,5 @@ module.exports = function (mongoose, express, app, db) {
 
     apiRoutes.post('/file', fileUpload.single('file'), FileController.upload);
     apiRoutes.delete('/file/:fileId', utils.requiredParams('fileId'), FileController.delete);
+    apiRoutes.get('/file/:fileId?', FileController.get);
 }

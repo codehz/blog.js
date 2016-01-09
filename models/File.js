@@ -8,7 +8,7 @@ module.exports = function (mongoose) {
         name: { type: String, required: true },
         user_id: { type: Number, required: true },
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        path: String
+        ext: String
     });
     return mongoose.model('File', fileScheme);
 }

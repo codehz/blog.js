@@ -39,7 +39,7 @@ module.exports = function (mongoose, config, db) {
                         name: req.file.originalname,
                         user_id: req.user.id,
                         user: req.user,
-                        path: nextFileId + ext
+                        ext,
                     });
                     file.save(err => err ?
                         utils.error(res, 422, err.message) :
@@ -69,8 +69,39 @@ module.exports = function (mongoose, config, db) {
         },
 
         get(req, res) {
-            console.log(req.params.fileId);
-            db.File.findOne({ id: req.params.fileId }, (err, file) => {
+            const id = req.params.fileId;
+            let query = {};
+            let sortBy = null;
+            
+            if (id) {
+                query = { id };
+            } else {
+                sortBy = {};
+                sortBy["order_by"] = "created_at";
+                sortBy["order_type"] = "desc";
+                if (req.query.name) query["name"] = req.query.name;
+                if (req.query.user_id) query["user_id"] = req.query.user_id;
+                if (req.query.ext) query["ext"] = req.query.ext;
+            }
+            
+            const queryRequest = db.find(query);
+            
+            if (sortBy) {
+                var sort = {};
+                sort[sortBy["order_by"]] = sortBy["order_type"] === "asc" ? "ascending" : "descending";
+                queryRequest.sort(sort);
+            }
+            
+            queryRequest.populate("user").exec((err, dbResponse) => {
+                if (err) return utils.error(res, 422, err);
+                if (!dbResponse) return utils.error(res, 404);
+                utils.responseData(res, dbResponse.count, dbResponse.map(article => fileResponse(article)));
+            })
+        },
+        
+        head(req, res) {
+            const id = req.params.fileId;
+            db.findOne({id}, (err, file) => {
                 if (err) return utils.error(res, 422, err);
                 if (!file) return utils.error(res, 404);
                 res.redirect(301, "http://" + config.host + (config.port == 80 ? "" : ":" + config.port)
