@@ -38,7 +38,7 @@ module.exports = function (mongoose, express, app, db) {
         ArticleController.Comment.preComment,
         ArticleController.Comment.getSingle);
     apiRoutes.get('/article/:articleId/comment', utils.requiredParams('articleId'),
-        ArticleController.Comment.preComment, ArticleController.Comment.getSingle);
+        ArticleController.Comment.preComment, ArticleController.Comment.getAll);
 
     // Middleware to check user auth
     apiRoutes.use(function (req, res, next) {

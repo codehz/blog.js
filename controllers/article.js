@@ -127,6 +127,7 @@ module.exports = function (mongoose, config, db) {
             },
 
             post(req, res) {
+                if (!req.article.comments) req.article.comments = [];
                 req.article.comments.push({ user: req.user, content: req.body.content, ref_id: req.params.commentId });
                 req.article.save(err => err ? utils.error(res, 422, err.message)
                     : utils.responseData(res, "post successful"));
