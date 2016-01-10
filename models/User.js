@@ -28,15 +28,15 @@ module.exports = function (mongoose) {
         bcrypt.hash(user.password, bcrypt.genSaltSync(), (err, hash) => {
             if (err) return next(err);
             user.password = hash;
-            if (user.blog.default_permission.count == 0) {
-                user.blog.default_permission.push({
+            if (!user.blog.default_permission || user.blog.default_permission.count == 0) {
+                user.blog.default_permission = [{
                     _id: mongoose.Types.ObjectId('default'),
                     read: true,
                     comment: true,
                     update: false,
                     admin_comment: false
-                });
-                user.markModified('default_permission');
+                }];
+                user.markModified('blog.default_permission');
             }
             next();
         });
