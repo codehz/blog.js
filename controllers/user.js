@@ -15,9 +15,7 @@ module.exports = function (mongoose, config, db) {
         _check(req, cb) {
             var token = req.decoded;
             console.log("token", token);
-            db.User.findOne({
-                _id: token._id
-            }, function (err, user) {
+            db.User.findOne({ _id: token._id }).populate('group').exec(function (err, user) {
                 console.log(token, 'user', user);
                 if (!user || err) return cb(null);
                 return cb(user);

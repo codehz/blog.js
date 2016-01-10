@@ -69,28 +69,31 @@ module.exports = function (mongoose, express, app, db) {
     });
 
     apiRoutes.post('/article', utils.requiredBody('title'), utils.requiredBody('content'),
+        ArticleController._checkBlogPermission('create'),
         ArticleController.create);
     apiRoutes.delete('/article/:articleId', utils.requiredParams('articleId'),
+        ArticleController._getArticleAndCheckPermission('adminComment'),
         ArticleController.delete);
     apiRoutes.put('/article/:articleId', utils.requiredParams('articleId'),
+        ArticleController._getArticleAndCheckPermission('update'),
         ArticleController.update);
 
     apiRoutes.post('/article/:articleId/comment',
         utils.requiredParams('articleId'),
-        ArticleController.Comment.preComment,
+        ArticleController._getArticleAndCheckPermission('comment'),
         ArticleController.Comment.post);
     apiRoutes.delete('/article/:articleId/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
-        ArticleController.Comment.preComment,
+        ArticleController._getArticleAndCheckPermissionOr('comment', 'admin_comment'),
         ArticleController.Comment.delete);
     apiRoutes.get('/article/:articleId/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
-        ArticleController.Comment.preComment,
+        ArticleController._getArticle,
         ArticleController.Comment.getSingle);
     apiRoutes.get('/article/:articleId/comment', utils.requiredParams('articleId'),
-        ArticleController.Comment.preComment, ArticleController.Comment.getAll);
+        ArticleController._getArticle, ArticleController.Comment.getAll);
 
     apiRoutes.post('/file', fileUpload.single('file'), FileController.upload);
     apiRoutes.delete('/file/:fileId', utils.requiredParams('fileId'), FileController.delete);

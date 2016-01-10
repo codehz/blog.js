@@ -36,6 +36,56 @@ module.exports = function (mongoose, config, db) {
     }
 
     return {
+        _checkBlogPermission(permission) {
+            return (req, res, next) => {
+                if (req.user.group.blog[permission]) return next();
+                utils.error(res, 403, "Forbidden");
+            }
+        },
+
+        _getArticleAndCheckPermission(permission) {
+            return (req, res, next) => {
+                db.Article.findOne({ id: req.params.articleId })
+                    .populate('user')
+                    .populate('comments.user').exec((err, article) => {
+                        if (err) return utils.error(res, 422, err);
+                        if (!article) return utils.error(res, 404);
+                        req.article = article;
+                        if (article.user.id != req.user.id) return next();
+                        let target = article.permission.id(req.user.group) || article.permission[0];
+                        if (target[permission]) return next();
+                        utils.error(res, 403, "Forbidden");
+                    });
+            }
+        },
+        
+        _getArticleAndCheckPermissionOr(permissions) {
+            return (req, res, next) => {
+                db.Article.findOne({ id: req.params.articleId })
+                    .populate('user')
+                    .populate('comments.user').exec((err, article) => {
+                        if (err) return utils.error(res, 422, err);
+                        if (!article) return utils.error(res, 404);
+                        req.article = article;
+                        if (article.user.id != req.user.id) return next();
+                        let target = article.permission.id(req.user.group) || article.permission[0];
+                        if (permissions.filter(permission => target[permission]).count != 0) return next();
+                        utils.error(res, 403, "Forbidden");
+                    });
+            }
+        },
+
+        _getArticle(req, res, next) {
+            db.Article.findOne({ id: req.params.articleId })
+                .populate('user')
+                .populate('comments.user').exec((err, article) => {
+                    if (err) return utils.error(res, 422, err);
+                    if (!article) return utils.error(res, 404);
+                    req.article = article;
+                    next();
+                });
+        },
+
         create(req, res) {
             db.Sequence.getNextSequence("articles", (err, nextArticleId) => {
                 if (err) return utils.error(res, 422, err);
@@ -54,26 +104,20 @@ module.exports = function (mongoose, config, db) {
             })
         },
         delete(req, res) {
-            db.Article.findOne({ id: req.params.articleId }).populate('user').exec((err, article) => {
-                if (err) return utils.error(res, 422, err);
-                if (article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
-                if (!article) return utils.error(res, 404);
-                article.remove(err => err ? utils.error(res, 422)
-                    : utils.success(res, "delete successful"));
-            })
+            let article = req.article;
+            if (article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
+            article.remove(err => err ? utils.error(res, 422)
+                : utils.success(res, "delete successful"));
         },
         update(req, res) {
-            db.Article.findOne({ id: req.params.articleId }).populate('user').exec((err, article) => {
-                if (err) return utils.error(res, 422, err);
-                if (!article) return utils.error(res, 404);
-                if (article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
+            let article = req.article;
+            if (article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
 
-                if (req.body.title) article.title = req.body.title;
-                if (req.body.content) article.price = req.body.content;
-                if (req.body.keyword) article.keyword = req.body.keyword.split(',');
+            if (req.body.title) article.title = req.body.title;
+            if (req.body.content) article.price = req.body.content;
+            if (req.body.keyword) article.keyword = req.body.keyword.split(',');
 
-                article.save((err, article) => utils.success(res, articleResponse(article)));
-            });
+            article.save((err, article) => utils.success(res, articleResponse(article)));
         },
         get(req, res) {
             const id = req.params.articleId;
@@ -106,15 +150,6 @@ module.exports = function (mongoose, config, db) {
             })
         },
         Comment: {
-            preComment(req, res, next) {
-                const id = req.params.articleId;
-                db.Article.findOne({ id }).populate("user").populate('comments.user').exec((err, article) => {
-                    if (err) return utils.error(res, 422, err.message);
-                    if (!article) return utils.error(res, 404);
-                    req.article = article;
-                    next();
-                })
-            },
 
             getAll(req, res) {
                 // Only bloggers and commentators can see the hidden comments

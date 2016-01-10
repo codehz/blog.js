@@ -16,10 +16,18 @@ module.exports = function (mongoose) {
             hide: { type: Boolean, default: true }
         }],
         draft: { type: Boolean, default: true },
+
+        permission: [{
+            _id: { type: Schema.Types.ObjectId, ref: 'Group' },
+            read: { type: Boolean, default: true },
+            comment: { type: Boolean, default: true },
+            update: { type: Boolean, default: true },
+            admin_comment: { type: Boolean, default: true }
+        }]
     });
 
     articleScheme.index({ created_at: -1 });
     articleScheme.index({ user_id: 1 });
-    
+
     return mongoose.model('Article', articleScheme);
 }

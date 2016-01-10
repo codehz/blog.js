@@ -1,14 +1,15 @@
+'use strict'
 /**
- * Sequence model
+ * Sequence model (Start from 0)
  * @param mongoose
- * @author Max Plavinskiy
+ * @author CodeHz
  * @returns {Model|*}
  */
-module.exports = function(mongoose) {
-    var Schema = mongoose.Schema;
-    var sequenceSchema = new Schema({
+module.exports = function (mongoose) {
+    let Schema = mongoose.Schema;
+    let sequenceSchema = new Schema({
         _id: { type: String, required: true, index: true },
-        seq: { type: Number, default: 0 }
+        seq: { type: Number, default: -1 }
     });
 
     /**
@@ -17,14 +18,10 @@ module.exports = function(mongoose) {
      * @param cb
      */
     sequenceSchema.statics.getNextSequence = (name, cb) => {
-        mongoose.model('Seqs').findOneAndUpdate(
-            { _id: name },
-            { $inc:   { seq: 1 } },
+        mongoose.model('Seqs').findOneAndUpdate({ _id: name },
+            { $inc: { seq: 1 } },
             { upsert: true },
-            (err, idDoc) => {
-                cb && cb(err, idDoc.seq);
-            }
-        );
+            (err, idDoc) => cb && cb(err, idDoc.seq));
     };
 
     return mongoose.model('Seqs', sequenceSchema);
