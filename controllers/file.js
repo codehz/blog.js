@@ -10,7 +10,7 @@ module.exports = function (mongoose, config, db) {
         return {
             id: file.id,
             name: file.name,
-            user_id: file.user_id,
+            user_id: user.id,
             user: {
                 id: user.id,
                 email: user.email,
@@ -37,7 +37,6 @@ module.exports = function (mongoose, config, db) {
                     const file = new db.File({
                         id: nextFileId,
                         name: req.file.originalname,
-                        user_id: req.user.id,
                         user: req.user,
                         ext,
                     });
@@ -51,10 +50,10 @@ module.exports = function (mongoose, config, db) {
         },
 
         delete(req, res) {
-            db.File.findOneAndRemove({ id: req.params.fileId }, (err, file) => {
+            db.File.findOneAndRemove({ id: req.params.fileId }).populate('user').exec((err, file) => {
                 if (err) return utils.error(res, 422, err);
                 if (!file) return utils.error(res, 404);
-                if (file.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
+                if (file.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
                 let fileName = config.uploadPath + "/" + file.id + file.ext;
                 fs.exists(fileName, exists => {
                     if (exists) {
@@ -80,7 +79,7 @@ module.exports = function (mongoose, config, db) {
                 sortBy["order_by"] = "created_at";
                 sortBy["order_type"] = "desc";
                 if (req.query.name) query["name"] = req.query.name;
-                if (req.query.user_id) query["user_id"] = req.query.user_id;
+                if (req.query.user_id) query["user.id"] = req.query.user_id;
                 if (req.query.ext) query["ext"] = req.query.ext;
             }
             

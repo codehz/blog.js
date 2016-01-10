@@ -9,7 +9,7 @@ module.exports = function (mongoose, config, db) {
             id: article.id,
             created_at: article.created_at,
             title: article.title,
-            user_id: article.user_id,
+            user_id: article.user.id,
             user: {
                 id: user.id,
                 name: user.name,
@@ -28,7 +28,6 @@ module.exports = function (mongoose, config, db) {
                 const article = db.Article({
                     id: nextArticleId,
                     title: req.body.title,
-                    user_id: req.user.id,
                     user: req.user,
                     content: req.body.content,
                     keywords: keyword.split(',')
@@ -40,18 +39,19 @@ module.exports = function (mongoose, config, db) {
             })
         },
         delete(req, res) {
-            db.Article.findOne({ id: req.params.articleId }, (err, article) => {
+            db.Article.findOne({ id: req.params.articleId }).populate('user').exec((err, article) => {
                 if (err) return utils.error(res, 422, err);
-                if (article.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
+                if (article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
                 if (!article) return utils.error(res, 404);
                 article.remove(err => err ? utils.error(res, 422)
                     : utils.success(res, "delete successful"));
             })
         },
         update(req, res) {
-            db.Article.findOne({ id: req.params.articleId, user_id: req.user.id }, (err, article) => {
+            db.Article.findOne({ id: req.params.articleId }).populate('user').exec((err, article) => {
                 if (err) return utils.error(res, 422, err);
                 if (!article) return utils.error(res, 404);
+                if (article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
 
                 if (req.body.title) article.title = req.body.title;
                 if (req.body.content) article.price = req.body.content;
@@ -72,7 +72,7 @@ module.exports = function (mongoose, config, db) {
                 sortBy["order_by"] = "created_at";
                 sortBy["order_type"] = "desc";
                 if (req.query.title) query["title"] = req.query.title;
-                if (req.query.user_id) query["user_id"] = req.query.user_id;
+                if (req.query.user_id) query["user.id"] = req.query.user_id;
                 if (req.query.order_by === "price") sortBy["order_by"] = req.query.order_by;
                 if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
             }

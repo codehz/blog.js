@@ -6,7 +6,6 @@ module.exports = function (mongoose) {
         id: {type: Number, index: true},
         created_at: { type: Date, default: Date.now },
         name: { type: String, required: true },
-        user_id: { type: Number, required: true },
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         ext: String
     });

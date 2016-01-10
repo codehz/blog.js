@@ -8,14 +8,14 @@ module.exports = function (mongoose, config, db) {
         return {
             id: comment.id,
             created_at: comment.created_at,
-            user_id: comment.user_id,
+            user_id: user.id,
             user: {
                 id: user.id,
                 name: user.name,
                 email: user.email
             },
-            target_article_id: comment.target_article_id,
-            target_id: comment.target_id,
+            target_article_id: comment.target_article.id,
+            target_id: comment.target.id,
             content: comment.content
         }
     }
@@ -24,11 +24,8 @@ module.exports = function (mongoose, config, db) {
         db.Sequence.getNextSequence('comment', (err, id) => {
             const comment = db.Comment({
                 id,
-                user_id: user.id,
                 user,
-                target_article_id: target_article.id,
                 target_article,
-                target_id: target ? target.id : 0,
                 target,
                 content
             });
@@ -55,10 +52,10 @@ module.exports = function (mongoose, config, db) {
         },
 
         delete(req, res) {
-            db.Comment.findOne({ id: req.params.commentId }).exec((err, comment) => {
+            db.Comment.findOne({ id: req.params.commentId }).populate('user').exec((err, comment) => {
                 if (err) return utils.error(res, 422, err);
                 if (!comment) return utils.error(res, 404);
-                if (comment.user_id != req.user.id
+                if (comment.user.id != req.user.id
                     && comment.target_article.user_id != req.user.id
                     && comment.target.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
                 if (!comment) return utils.error(res, 404);
@@ -78,9 +75,9 @@ module.exports = function (mongoose, config, db) {
                 sortBy = {};
                 sortBy["order_by"] = "created_at";
                 sortBy["order_type"] = "desc";
-                if (req.query.user_id) query["user_id"] = req.query.user_id;
-                if (req.query.target_article_id) query["target_article_id"] = req.query.target_article_id;
-                if (req.query.target_id) query["target_id"] = req.query.target_id;
+                if (req.query.user_id) query["user.id"] = req.query.user_id;
+                if (req.query.target_article_id) query["target_article.id"] = req.query.target_article_id;
+                if (req.query.target_id) query["target.id"] = req.query.target_id;
             }
 
             const queryRequest = db.Comment.find(query);
@@ -90,11 +87,14 @@ module.exports = function (mongoose, config, db) {
                 queryRequest.sort(sort);
             }
 
-            queryRequest.populate({ path: 'user', select: 'id name email' }).exec((err, dbResponse) => {
-                if (err) return utils.error(res, 422, err.message);
-                if (!dbResponse) return utils.error(res, 404);
-                utils.responseData(res, dbResponse.count, dbResponse.map(comment => commentResponse(comment)));
-            })
+            queryRequest.populate({ path: 'user', select: 'id name email' })
+                .populate('target_article')
+                .populate('target')
+                .exec((err, dbResponse) => {
+                    if (err) return utils.error(res, 422, err.message);
+                    if (!dbResponse) return utils.error(res, 404);
+                    utils.responseData(res, dbResponse.count, dbResponse.map(comment => commentResponse(comment)));
+                })
         }
     }
 }
