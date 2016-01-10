@@ -123,7 +123,7 @@ module.exports = function (mongoose, config, db) {
                 if (!comment) return utils.error(res, 404);
                 if (comment.hide && !req.user || req.article.user.id != req.user.id && comment.user.id != req.user.id)
                     return utils.error(res, 403, "Forbidden");
-                res.responseData(res, "", comment);
+                utils.responseData(res, "", comment);
             },
 
             post(req, res) {
