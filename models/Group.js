@@ -21,11 +21,11 @@ module.exports = function (mongoose) {
                 let newGroup = mongoose.model('Group')({ _id: 'default' });
                 newGroup.save((err, group) => {
                     if (err) throw err;
-                    user.group = group;
+                    user.group = group.id;
                     cb();
                 })
             } else {
-                user.group = group;
+                user.group = group.id;
                 cb();
             }
         });

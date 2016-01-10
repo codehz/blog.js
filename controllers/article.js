@@ -101,9 +101,8 @@ module.exports = function (mongoose, config, db) {
                     permission: req.user.blog.permission
                 });
                 article.save(err => err ?
-                    utils.error(res, 422, err.message) :
-                    utils.success(res, "update success!")
-                    );
+                    db.Sequence.SequenceRollback("articles", utils.error(res, 422, err.message)) :
+                    utils.success(res, "update success!"));
             })
         },
         delete(req, res) {

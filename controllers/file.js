@@ -53,7 +53,7 @@ module.exports = function (mongoose, config, db) {
             db.File.findOneAndRemove({ id: req.params.fileId }).populate('user').exec((err, file) => {
                 if (err) return utils.error(res, 422, err);
                 if (!file) return utils.error(res, 404);
-                if (file.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
+                if (file.user.id != req.user.id) return utils.error(res, 403);
                 let fileName = config.uploadPath + "/" + file.id + file.ext;
                 fs.exists(fileName, exists => {
                     if (exists) {
