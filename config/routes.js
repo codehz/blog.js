@@ -110,8 +110,8 @@ module.exports = function (mongoose, express, app, db) {
         ArticleController.Comment._getComment,
         ArticleController.Comment.changeHideState);
 
-    apiRoutes.post('/file', fileUpload._checkPermission, fileUpload.single('file'), FileController.upload);
-    apiRoutes.delete('/file/:fileId', fileUpload._checkPermission, utils.requiredParams('fileId'), FileController.delete);
+    apiRoutes.post('/file', FileController._checkPermission, fileUpload.single('file'), FileController.upload);
+    apiRoutes.delete('/file/:fileId', FileController._checkPermission, utils.requiredParams('fileId'), FileController.delete);
     apiRoutes.get('/file', FileController.get);
 
     apiRoutes.get('/group', GroupController._checkPermission, GroupController.getAll);
