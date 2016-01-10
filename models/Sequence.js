@@ -9,7 +9,7 @@ module.exports = function (mongoose) {
     let Schema = mongoose.Schema;
     let sequenceSchema = new Schema({
         _id: { type: String, required: true, index: true },
-        seq: { type: Number, default: -1 }
+        seq: { type: Number, default: 0 }
     });
 
     /**
@@ -21,14 +21,14 @@ module.exports = function (mongoose) {
         mongoose.model('Seqs').findOneAndUpdate({ _id: name },
             { $inc: { seq: 1 } },
             { upsert: true },
-            (err, idDoc) => cb && cb(err, idDoc.seq));
+            (err, idDoc) => cb && cb(err, idDoc.seq - 1));
     };
     
     sequenceSchema.statics.SequenceRollback = (name, cb) => {
         mongoose.model('Seqs').findOneAndUpdate({ _id: name },
             { $inc: { seq: -1 } },
             { upsert: true },
-            (err, idDoc) => cb && cb(err, idDoc.seq));
+            (err, idDoc) => cb && cb(err));
     };
 
     return mongoose.model('Seqs', sequenceSchema);
