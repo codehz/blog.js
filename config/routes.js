@@ -59,7 +59,7 @@ module.exports = function (mongoose, express, app, db) {
                     UserController._check(req, user => {
                         if (user) {
                             req.user = user;
-                            console.log("Checked", user);
+                            console.log("Checked", user.name, user.email);
                             next();
                         } else utils.error(res, 401, "Token Check failed!");
                     })

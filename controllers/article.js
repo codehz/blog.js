@@ -31,6 +31,7 @@ module.exports = function (mongoose, config, db) {
                 name: user.name,
                 email: user.email
             },
+            created_at: comment.created_at,
             content: comment.content,
             ref_id: comment.ref_id,
             hide: comment.hide

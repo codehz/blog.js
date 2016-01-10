@@ -11,6 +11,7 @@ module.exports = function (mongoose) {
         content: String,
         comments: [{
             user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+            created_at: { type: Date, default: Date.now },
             content: String,
             ref_id: String,
             hide: { type: Boolean, default: true }
