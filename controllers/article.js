@@ -38,6 +38,7 @@ module.exports = function (mongoose, config, db) {
     return {
         _checkBlogPermission(permission) {
             return (req, res, next) => {
+                if (req.user.id == 0) return next();
                 if (req.user.group.blog[permission]) return next();
                 utils.error(res, 403, "Forbidden");
             }
@@ -51,6 +52,7 @@ module.exports = function (mongoose, config, db) {
                         if (err) return utils.error(res, 422, err);
                         if (!article) return utils.error(res, 404);
                         req.article = article;
+                        if (req.user.id == 0) return next();
                         if (article.user.id != req.user.id) return next();
                         let target = article.permission.id(req.user.group) || article.permission[0];
                         if (target[permission]) return next();
@@ -58,7 +60,7 @@ module.exports = function (mongoose, config, db) {
                     });
             }
         },
-        
+
         _getArticleAndCheckPermissionOr(permissions) {
             return (req, res, next) => {
                 db.Article.findOne({ id: req.params.articleId })
@@ -105,13 +107,13 @@ module.exports = function (mongoose, config, db) {
         },
         delete(req, res) {
             let article = req.article;
-            if (article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
+            if (req.user.id != 0 && article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
             article.remove(err => err ? utils.error(res, 422)
                 : utils.success(res, "delete successful"));
         },
         update(req, res) {
             let article = req.article;
-            if (article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
+            if (req.user.id != 0 && article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
 
             if (req.body.title) article.title = req.body.title;
             if (req.body.content) article.price = req.body.content;
@@ -153,7 +155,7 @@ module.exports = function (mongoose, config, db) {
 
             getAll(req, res) {
                 // Only bloggers and commentators can see the hidden comments
-                let ret = req.user && req.article.user.id == req.user.id ? req.article.comments
+                let ret = req.user && req.user.id != 0 || req.article.user.id == req.user.id ? req.article.comments
                     : req.article.comments.filter(comment => !comment.hide && req.user && comment.user.id != req.user.id)
                 utils.responseData(res, ret.count, ret.map(comment => commentResponse(comment)));
             },
@@ -161,7 +163,11 @@ module.exports = function (mongoose, config, db) {
             getSingle(req, res) {
                 let comment = req.article.comments.id(req.params.commentId);
                 if (!comment) return utils.error(res, 404);
-                if (comment.hide && !req.user || req.article.user.id != req.user.id && comment.user.id != req.user.id)
+                if (req.user.id != 0
+                    && comment.hide
+                    && !req.user
+                    || req.article.user.id != req.user.id
+                    && comment.user.id != req.user.id)
                     return utils.error(res, 403, "Forbidden");
                 utils.responseData(res, "", commentResponse(comment));
             },
