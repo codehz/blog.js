@@ -8,7 +8,6 @@ module.exports = function (mongoose, express, app, db) {
         , UserController = require('../controllers/user')(mongoose, config, db)
         , ArticleController = require('../controllers/article.js')(mongoose, config, db)
         , FileController = require('../controllers/file.js')(mongoose, config, db)
-        , CommentController = require('../controllers/comment.js')(mongoose, config, db)
         , apiRoutes = express.Router();
     const fileUpload = multer({
         dest: '/tmp',
@@ -33,7 +32,13 @@ module.exports = function (mongoose, express, app, db) {
 
     apiRoutes.get('/article/:articleId?', ArticleController.get);
     apiRoutes.get('/file/:fileId', utils.requiredParams('fileId'), FileController.redirect);
-    apiRoutes.get('/comment/:commentId?', CommentController.get);
+    apiRoutes.get('/article/:articleId/comment/:commentId',
+        utils.requiredParams('articleId'),
+        utils.requiredParams('commentId'),
+        ArticleController.Comment.preComment,
+        ArticleController.Comment.getSingle);
+    apiRoutes.get('/article/:articleId/comment', utils.requiredParams('articleId'),
+        ArticleController.Comment.preComment, ArticleController.Comment.getSingle);
 
     // Middleware to check user auth
     apiRoutes.use(function (req, res, next) {
@@ -70,10 +75,17 @@ module.exports = function (mongoose, express, app, db) {
     apiRoutes.put('/article/:articleId', utils.requiredParams('articleId'),
         ArticleController.update);
 
+    apiRoutes.post('/article/:articleId/comment',
+        utils.requiredParams('articleId'),
+        ArticleController.Comment.preComment,
+        ArticleController.Comment.post);
+    apiRoutes.delete('/article/:articleId/comment/:commentId',
+        utils.requiredParams('articleId'),
+        utils.requiredParams('commentId'),
+        ArticleController.Comment.preComment,
+        ArticleController.Comment.delete);
+
     apiRoutes.post('/file', fileUpload.single('file'), FileController.upload);
     apiRoutes.delete('/file/:fileId', utils.requiredParams('fileId'), FileController.delete);
     apiRoutes.get('/file', FileController.get);
-    
-    apiRoutes.post('/comment', utils.requiredBody('article'), CommentController.create);
-    apiRoutes.delete('/comment/:commentId', utils.requiredParams('commentId'), CommentController.delete);
 }

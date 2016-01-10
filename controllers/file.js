@@ -81,6 +81,8 @@ module.exports = function (mongoose, config, db) {
                 if (req.query.name) query["name"] = req.query.name;
                 if (req.query.user_id) query["user.id"] = req.query.user_id;
                 if (req.query.ext) query["ext"] = req.query.ext;
+                if (req.query.order_by == "name") sortBy["order_by"] = "name";
+                if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
             }
             
             const queryRequest = db.File.find(query);

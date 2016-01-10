@@ -20,6 +20,16 @@ module.exports = function (mongoose, config, db) {
         }
     }
 
+    function commentResponse(comment) {
+        return {
+            id: comment.id,
+            user: comment.user,
+            content: comment.content,
+            ref_id: comment.ref_id,
+            hide: hide
+        }
+    }
+
     return {
         create(req, res) {
             db.Sequence.getNextSequence("articles", (err, nextArticleId) => {
@@ -73,7 +83,7 @@ module.exports = function (mongoose, config, db) {
                 sortBy["order_type"] = "desc";
                 if (req.query.title) query["title"] = req.query.title;
                 if (req.query.user_id) query["user.id"] = req.query.user_id;
-                if (req.query.order_by === "price") sortBy["order_by"] = req.query.order_by;
+                if (req.query.keyword) query["keyword"] = { $in: req.query.keyword.split(',') }
                 if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
             }
 
@@ -89,6 +99,46 @@ module.exports = function (mongoose, config, db) {
                 if (!dbResponse) return utils.error(res, 404);
                 utils.responseData(res, dbResponse.count, dbResponse.map(article => articleResponse(article)));
             })
+        },
+        Comment: {
+            preComment(req, res, next) {
+                const id = req.params.articleId;
+                db.Article.find({ id }).populate("user").populate('comments').populate('comments.user').exec((err, article) => {
+                    if (err) return utils.error(res, 422, err.message);
+                    if (!article) return utils.error(res, 404);
+                    req.article = article;
+                    next();
+                })
+            },
+
+            getAll(req, res) {
+                // Only bloggers and commentators can see the hidden comments
+                let ret = req.user && req.article.user.id == req.user.id ? req.article.comments
+                    : req.article.comments.filter(comment => !comment.hide && req.user && comment.user.id != req.user.id)
+                res.responseData(res, ret.count, ret);
+            },
+
+            getSingle(req, res) {
+                let comment = req.article.comments.id(req.params.commentId);
+                if (!comment) return utils.error(res, 404);
+                if (comment.hide && !req.user || req.article.user.id != req.user.id && comment.user.id != req.user.id)
+                    return utils.error(res, 403, "Forbidden");
+                res.responseData(res, "", comment);
+            },
+
+            post(req, res) {
+                req.article.comments.push({ user: req.user, content: req.body.content, ref_id: req.params.commentId });
+                req.article.save(err => err ? utils.error(res, 422, err.message)
+                    : utils.responseData(res, "post successful"));
+            },
+
+            delete(req, res) {
+                let comment = req.article.comments.id(req.params.commentId);
+                if (!comment) return utils.error(res, 404);
+                comment.remove();
+                req.article.save(err => err ? utils.error(res, 422, err.message)
+                    : utils.responseData(res, "post successful"));
+            }
         }
     }
 }
