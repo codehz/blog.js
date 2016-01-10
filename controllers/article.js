@@ -22,6 +22,7 @@ module.exports = function (mongoose, config, db) {
     }
 
     function commentResponse(comment, owner) {
+        console.log(comment, owner);
         const user = comment.user;
         return {
             id: comment.id,
@@ -157,7 +158,7 @@ module.exports = function (mongoose, config, db) {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
                 let ret = dbResponse
-                    .filter(article => !article.draft || (req.user && (req.user.isSuperUser() || req.user.id == article.user.id)))
+                    // .filter(article => !article.draft || (req.user && (req.user.isSuperUser() || req.user.id == article.user.id)))
                     .map(article =>
                         articleResponse(article, req.user && (req.user.isSuperUser() || req.user.id == article.user.id)));
                 utils.responseData(res, ret.count, ret);
