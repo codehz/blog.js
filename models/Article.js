@@ -18,7 +18,7 @@ module.exports = function (mongoose) {
         draft: { type: Boolean, default: true },
 
         permission: [{
-            _id: { type: Schema.Types.ObjectId, ref: 'Group' },
+            _id: { type: String, ref: 'Group' },
             read: { type: Boolean, default: true },
             comment: { type: Boolean, default: true },
             update: { type: Boolean, default: true },

@@ -11,7 +11,7 @@ module.exports = function (mongoose) {
 
         blog: {
             default_permission: [{
-                _id: { type: Schema.Types.ObjectId, ref: 'Group' },
+                _id: { type: String, ref: 'Group' },
                 read: { type: Boolean, default: true },
                 comment: { type: Boolean, default: true },
                 update: { type: Boolean, default: false },
