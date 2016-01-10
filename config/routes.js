@@ -69,6 +69,8 @@ module.exports = function (mongoose, express, app, db) {
             return utils.error(res, 401, "No Token");
         }
     });
+    
+    apiRoutes.get('/me', UserController.current);
 
     apiRoutes.get('/article/:articleId?', ArticleController.find);
     apiRoutes.post('/article', utils.requiredBody('title'), utils.requiredBody('content'),
