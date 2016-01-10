@@ -4,7 +4,6 @@ module.exports = function (mongoose, config, db) {
     const utils = require('../lib/utils')();
 
     function articleResponse(article, owner) {
-        console.log(article, owner);
         const user = article.user;
         return {
             id: article.id,
@@ -144,7 +143,7 @@ module.exports = function (mongoose, config, db) {
                 if (req.query.user_id) query["user.id"] = req.query.user_id;
                 if (req.query.keywords) query["keywords"] = { $in: req.query.keywords.split(',') }
                 if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
-                query["draft"] = req.query.draft ? req.query.draft : undefined;
+                if (req.query.draft) query["draft"] = req.query.draft;
             }
 
             const queryRequest = db.Article.find(query);
@@ -158,7 +157,7 @@ module.exports = function (mongoose, config, db) {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
                 let ret = dbResponse
-                    // .filter(article => !article.draft || (req.user && (req.user.isSuperUser() || req.user.id == article.user.id)))
+                    .filter(article => !article.draft || (req.user && (req.user.isSuperUser() || req.user.id == article.user.id)))
                     .map(article =>
                         articleResponse(article, req.user && (req.user.isSuperUser() || req.user.id == article.user.id)));
                 utils.responseData(res, ret.count, ret);
