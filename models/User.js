@@ -36,7 +36,7 @@ module.exports = function (mongoose) {
                     update: false,
                     admin_comment: false
                 }];
-                user.markModified('blog');
+                return user.blog.save(next);
             }
             next();
         });
