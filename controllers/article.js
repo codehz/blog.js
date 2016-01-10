@@ -141,11 +141,9 @@ module.exports = function (mongoose, config, db) {
                 sortBy["order_type"] = "desc";
                 if (req.query.title) query["title"] = req.query.title;
                 if (req.query.user_id) query["user.id"] = req.query.user_id;
-                if (req.query.keyword) query["keyword"] = { $in: req.query.keyword.split(',') }
+                if (req.query.keywords) query["keywords"] = { $in: req.query.keywords.split(',') }
                 if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
             }
-            
-            console.log(query);
 
             const queryRequest = db.Article.find(query);
             if (sortBy) {
