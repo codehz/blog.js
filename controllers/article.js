@@ -143,6 +143,7 @@ module.exports = function (mongoose, config, db) {
                 if (req.query.user_id) query["user.id"] = req.query.user_id;
                 if (req.query.keywords) query["keywords"] = { $in: req.query.keywords.split(',') }
                 if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
+                query["draft"] = req.query.draft ? req.query.draft : undefined;
             }
 
             const queryRequest = db.Article.find(query);
@@ -155,8 +156,11 @@ module.exports = function (mongoose, config, db) {
             queryRequest.populate("user").exec((err, dbResponse) => {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
-                utils.responseData(res, dbResponse.count, dbResponse.map(article =>
-                    articleResponse(article, req.user && (req.user.isSuperUser() || req.user.id == article.user.id))));
+                let ret = dbResponse
+                    .filter(article => !article.draft || (req.user && (req.user.isSuperUser() || req.user.id == article.user.id)))
+                    .map(article =>
+                        articleResponse(article, req.user && (req.user.isSuperUser() || req.user.id == article.user.id)));
+                utils.responseData(res, ret.count, ret);
             })
         },
         Comment: {
