@@ -21,12 +21,17 @@ module.exports = function (mongoose, config, db) {
     }
 
     function commentResponse(comment) {
+        const user = comment.user;
         return {
             id: comment.id,
-            user: comment.user,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email
+            },
             content: comment.content,
             ref_id: comment.ref_id,
-            hide: hide
+            hide: comment.hide
         }
     }
 
