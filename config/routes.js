@@ -33,7 +33,7 @@ module.exports = function (mongoose, express, app, db) {
     
     apiRoutes.get('/file/:fileId', utils.requiredParams('fileId'), FileController.redirect);
 
-    apiRoutes.get('/public/article/:articleId?', ArticleController.get);
+    apiRoutes.get('/public/article/:articleId?', ArticleController.find);
     apiRoutes.get('/public/article/:articleId/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
@@ -70,7 +70,7 @@ module.exports = function (mongoose, express, app, db) {
         }
     });
 
-    apiRoutes.get('/article/:articleId?', ArticleController.get);
+    apiRoutes.get('/article/:articleId?', ArticleController.find);
     apiRoutes.post('/article', utils.requiredBody('title'), utils.requiredBody('content'),
         ArticleController._checkBlogPermission('create'),
         ArticleController.create);

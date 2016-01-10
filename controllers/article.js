@@ -128,7 +128,7 @@ module.exports = function (mongoose, config, db) {
             req.article.save((err, article) => err ? utils.error(res, 422, err.message)
                 : utils.success(res, articleResponse(article)));
         },
-        get(req, res) {
+        find(req, res) {
             const id = req.params.articleId;
             let query = {};
             let sortBy = null;
@@ -144,6 +144,8 @@ module.exports = function (mongoose, config, db) {
                 if (req.query.keyword) query["keyword"] = { $in: req.query.keyword.split(',') }
                 if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
             }
+            
+            console.log(query);
 
             const queryRequest = db.Article.find(query);
             if (sortBy) {
