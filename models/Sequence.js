@@ -23,6 +23,13 @@ module.exports = function (mongoose) {
             { upsert: true },
             (err, idDoc) => cb && cb(err, idDoc.seq));
     };
+    
+    sequenceSchema.statics.SequenceRollback = (name, cb) => {
+        mongoose.model('Seqs').findOneAndUpdate({ _id: name },
+            { $inc: { seq: -1 } },
+            { upsert: true },
+            (err, idDoc) => cb && cb(err, idDoc.seq));
+    };
 
     return mongoose.model('Seqs', sequenceSchema);
 }
