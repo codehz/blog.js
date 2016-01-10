@@ -14,8 +14,8 @@ module.exports = function (mongoose) {
                 _id: { type: Schema.Types.ObjectId, ref: 'Group' },
                 read: { type: Boolean, default: true },
                 comment: { type: Boolean, default: true },
-                update: { type: Boolean, default: true },
-                admin_comment: { type: Boolean, default: true }
+                update: { type: Boolean, default: false },
+                admin_comment: { type: Boolean, default: false }
             }]
         },
         group: { type: Schema.Types.ObjectId, ref: 'Group', required: true }
@@ -30,8 +30,8 @@ module.exports = function (mongoose) {
             user.password = hash;
             if (!user.blog.default_permission || user.blog.default_permission.count == 0) {
                 user.blog.default_permission = [{
-                    _id: mongoose.Types.ObjectId('default'),
-                    ead: true,
+                    _id: 'default',
+                    read: true,
                     comment: true,
                     update: false,
                     admin_comment: false
