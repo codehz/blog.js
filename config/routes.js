@@ -124,6 +124,7 @@ module.exports = function (mongoose, express, app, db) {
     apiRoutes.get('/group/:groupId',
         GroupController._checkPermission,
         utils.requiredParams('groupId'),
+        GroupController._getGroup,
         GroupController.getSingle);
     apiRoutes.put('/group/:groupId',
         GroupController._checkPermission,

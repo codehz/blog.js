@@ -21,7 +21,7 @@ module.exports = function (mongoose, config, db) {
         },
 
         getSingle(req, res) {
-            utils.responseData(res, req.group.name, req.group);
+            utils.responseData(res, req.group.id, req.group);
         },
 
         getAll(req, res) {
