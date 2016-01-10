@@ -7,7 +7,7 @@
 module.exports = function(mongoose) {
     var Schema = mongoose.Schema;
     var sequenceSchema = new Schema({
-        _id: { type: String, required: true },
+        _id: { type: String, required: true, index: true },
         seq: { type: Number, default: 0 }
     });
 

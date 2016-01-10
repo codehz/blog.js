@@ -3,7 +3,7 @@
 module.exports = function (mongoose) {
     const bcrypt = require('bcrypt'), Schema = mongoose.Schema;
     var userSchema = new Schema({
-        id: Number,
+        id: {type: Number, index: true},
         name: { type: String, required: true },
         password: { type: String, required: true },
         phone: String,
