@@ -36,6 +36,7 @@ module.exports = function (mongoose) {
                     update: false,
                     admin_comment: false
                 });
+                user.markModified('default_permission');
             }
             next();
         });
