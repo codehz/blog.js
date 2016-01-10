@@ -81,19 +81,33 @@ module.exports = function (mongoose, express, app, db) {
     apiRoutes.post('/article/:articleId/comment',
         utils.requiredParams('articleId'),
         ArticleController._getArticleAndCheckPermission('comment'),
-        ArticleController.Comment.post);
+        ArticleController.Comment.create);
+    apiRoutes.post('/article/:articleId/comment/:commentId',
+        utils.requiredParams('articleId'),
+        utils.requiredParams('commentId'),
+        ArticleController._getArticleAndCheckPermission('comment'),
+        ArticleController.Comment._getComment,
+        ArticleController.Comment.create);
     apiRoutes.delete('/article/:articleId/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
         ArticleController._getArticleAndCheckPermissionOr('comment', 'admin_comment'),
+        ArticleController.Comment._getComment,
         ArticleController.Comment.delete);
     apiRoutes.get('/article/:articleId/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
         ArticleController._getArticle,
+        ArticleController.Comment._getComment,
         ArticleController.Comment.getSingle);
     apiRoutes.get('/article/:articleId/comment', utils.requiredParams('articleId'),
         ArticleController._getArticle, ArticleController.Comment.getAll);
+    apiRoutes.put('/article/:articleId/comment/:commentId',
+        utils.requiredParams('articleId'),
+        utils.requiredParams('commentId'),
+        ArticleController._getArticle,
+        ArticleController.Comment._getComment,
+        ArticleController.Comment.changeHideState);
 
     apiRoutes.post('/file', fileUpload.single('file'), FileController.upload);
     apiRoutes.delete('/file/:fileId', utils.requiredParams('fileId'), FileController.delete);

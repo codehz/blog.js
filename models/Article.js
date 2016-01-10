@@ -12,7 +12,7 @@ module.exports = function (mongoose) {
         comments: [{
             user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
             content: String,
-            ref_id: { type: Number, default: 0 },
+            ref_id: String,
             hide: { type: Boolean, default: true }
         }],
         draft: { type: Boolean, default: true },

@@ -3,7 +3,7 @@
 module.exports = function (mongoose, config, db) {
     const utils = require('../lib/utils')();
 
-    function articleResponse(article) {
+    function articleResponse(article, owner) {
         const user = article.user;
         return {
             id: article.id,
@@ -16,11 +16,12 @@ module.exports = function (mongoose, config, db) {
                 email: user.email
             },
             keywords: article.keywords,
-            content: article.content
+            content: article.content,
+            permission: owner ? article.permission : undefined
         }
     }
 
-    function commentResponse(comment) {
+    function commentResponse(comment, owner) {
         const user = comment.user;
         return {
             id: comment.id,
@@ -106,20 +107,26 @@ module.exports = function (mongoose, config, db) {
             })
         },
         delete(req, res) {
-            let article = req.article;
-            if (!req.user.isSuperUser() && article.user.id != req.user.id) return utils.error(res, 403);
-            article.remove(err => err ? utils.error(res, 422)
+            if (!req.user.isSuperUser() && req.article.user.id != req.user.id) return utils.error(res, 403);
+            req.article.remove(err => err ? utils.error(res, 422)
                 : utils.success(res, "delete successful"));
         },
         update(req, res) {
-            let article = req.article;
-            if (!req.user.isSuperUser() && article.user.id != req.user.id) return utils.error(res, 403);
+            if (!req.user.isSuperUser() && req.article.user.id != req.user.id) return utils.error(res, 403);
 
-            if (req.body.title) article.title = req.body.title;
-            if (req.body.content) article.price = req.body.content;
-            if (req.body.keyword) article.keyword = req.body.keyword.split(',');
+            if (req.body.title) req.article.title = req.body.title;
+            if (req.body.content) req.article.price = req.body.content;
+            if (req.body.keyword) req.article.keyword = req.body.keyword.split(',');
+            if (req.body.permission) {
+                try {
+                    req.article.permission = JSON.parse(req.body.permission);
+                } catch (err) {
+                    return utils.error(res, 422, err.message);
+                }
+            }
 
-            article.save((err, article) => utils.success(res, articleResponse(article)));
+            req.article.save((err, article) => err ? utils.error(res, 422, err.message)
+                : utils.success(res, articleResponse(article)));
         },
         get(req, res) {
             const id = req.params.articleId;
@@ -148,10 +155,17 @@ module.exports = function (mongoose, config, db) {
             queryRequest.populate("user").exec((err, dbResponse) => {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
-                utils.responseData(res, dbResponse.count, dbResponse.map(article => articleResponse(article)));
+                utils.responseData(res, dbResponse.count, dbResponse.map(article =>
+                    articleResponse(article, req.user.isSuperUser() || req.user.id == article.user.id)));
             })
         },
         Comment: {
+            _getComment(req, res, next) {
+                let comment = req.article.comments.id(req.params.commentId);
+                if (!comment) return utils.error(res, 404);
+                req.comment = comment;
+                next();
+            },
 
             getAll(req, res) {
                 // Only bloggers and commentators can see the hidden comments
@@ -161,28 +175,35 @@ module.exports = function (mongoose, config, db) {
             },
 
             getSingle(req, res) {
-                let comment = req.article.comments.id(req.params.commentId);
-                if (!comment) return utils.error(res, 404);
                 if (!req.user.isSuperUser()
-                    && comment.hide
-                    && !req.user
-                    || req.article.user.id != req.user.id
-                    && comment.user.id != req.user.id)
-                    return utils.error(res, 403);
-                utils.responseData(res, "", commentResponse(comment));
+                    && req.comment.hide
+                    && (!req.user || req.article.user.id != req.user.id) // Logged, but not blogger
+                    && req.comment.user.id != req.user.id) // Nor is commentator
+                    return utils.error(res, 404); // Pretend it does not exist
+                utils.responseData(res, "", commentResponse(req.comment));
             },
 
-            post(req, res) {
+            create(req, res) {
                 if (!req.article.comments) req.article.comments = [];
-                req.article.comments.push({ user: req.user, content: req.body.content, ref_id: req.params.commentId });
+                if (!req.user.isSuperUser()
+                    && req.comment.hide
+                    && (!req.user || req.article.user.id != req.user.id)
+                    && req.comment.user.id != req.user.id)
+                    return utils.error(res, 404);
+                req.article.comments.push({ user: req.user, content: req.body.content, ref_id: req.comment.id });
                 req.article.save(err => err ? utils.error(res, 422, err.message)
                     : utils.responseData(res, "post successful"));
             },
 
+            changeHideState(req, res) {
+                if (!req.user.isSuperUser() && (!req.user || req.article.user.id != req.user.id))
+                    return utils.error(res, 404); // Pretend it does not exist
+                req.comment.hide = !!req.params.hide;
+                req.comment.save();
+            },
+
             delete(req, res) {
-                let comment = req.article.comments.id(req.params.commentId);
-                if (!comment) return utils.error(res, 404);
-                comment.remove();
+                req.comment.remove();
                 req.article.save(err => err ? utils.error(res, 422, err.message)
                     : utils.responseData(res, "delete successful"));
             }
