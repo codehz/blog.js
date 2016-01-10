@@ -7,7 +7,7 @@ module.exports = function (mongoose, config, db) {
         _checkPermission(req, res, next) {
             if (!req.user.isSuperUser()
                 || req.user.group.admin)
-                utils.error(res, 403);
+                return utils.error(res, 403);
             next();
         },
 
