@@ -120,7 +120,7 @@ module.exports = function (mongoose, config, db) {
                 // Only bloggers and commentators can see the hidden comments
                 let ret = req.user && req.article.user.id == req.user.id ? req.article.comments
                     : req.article.comments.filter(comment => !comment.hide && req.user && comment.user.id != req.user.id)
-                utils.responseData(res, ret.count, ret);
+                utils.responseData(res, ret.count, ret.map(comment => commentResponse(comment)));
             },
 
             getSingle(req, res) {
@@ -128,7 +128,7 @@ module.exports = function (mongoose, config, db) {
                 if (!comment) return utils.error(res, 404);
                 if (comment.hide && !req.user || req.article.user.id != req.user.id && comment.user.id != req.user.id)
                     return utils.error(res, 403, "Forbidden");
-                utils.responseData(res, "", comment);
+                utils.responseData(res, "", commentResponse(comment));
             },
 
             post(req, res) {
