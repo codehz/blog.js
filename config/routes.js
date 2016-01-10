@@ -35,7 +35,7 @@ module.exports = function (mongoose, express, app, db) {
     apiRoutes.get('/article/:articleId/public/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
-        ArticleController.Comment.preComment,
+        ArticleController._getArticle,
         ArticleController.Comment.getSingle);
     apiRoutes.get('/article/:articleId/public/comment', utils.requiredParams('articleId'),
         ArticleController.Comment.preComment, ArticleController.Comment.getAll);
