@@ -103,7 +103,7 @@ module.exports = function (mongoose, config, db) {
         Comment: {
             preComment(req, res, next) {
                 const id = req.params.articleId;
-                db.Article.find({ id }).populate("user").populate('comments.user').exec((err, article) => {
+                db.Article.findOne({ id }).populate("user").populate('comments.user').exec((err, article) => {
                     if (err) return utils.error(res, 422, err.message);
                     if (!article) return utils.error(res, 404);
                     req.article = article;
