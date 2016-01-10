@@ -28,6 +28,7 @@ module.exports = function (mongoose) {
         bcrypt.hash(user.password, bcrypt.genSaltSync(), (err, hash) => {
             if (err) return next(err);
             user.password = hash;
+            console.log(user.blog.default_permission);
             if (!user.blog.default_permission || user.blog.default_permission.count == 0) {
                 user.blog.default_permission = [{
                     _id: mongoose.Types.ObjectId('default'),
