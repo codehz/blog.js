@@ -5,6 +5,7 @@ let path = require('path')
     , rootPath = path.normalize(__dirname + '/..')
     , env = process.env.NODE_ENV || 'development'
     , secret = 'OVERLOAD_CODE_HZ_OPNOTPERMIT_FBR'
+    , dbBase = process.env.DB_BASE || 'mongodb://localhost/'
     , uploadDir = '/uploads'
     , uploadPath = rootPath + uploadDir
     , fileUploadLimit = 10485760 // 10 MB
@@ -16,7 +17,7 @@ let config = {
             name: 'blogjs'
         },
         port: 8080,
-        db: 'mongodb://localhost/master-dev',
+        db: dbBase + 'master-dev',
         secret: secret,
         uploadDir: uploadDir,
         uploadPath: uploadPath,
@@ -29,7 +30,7 @@ let config = {
             name: 'blogjs'
         },
         port: 80,
-        db: 'mongodb://localhost/master',
+        db: dbBase + 'master',
         secret: secret,
         uploadDir: uploadDir,
         uploadPath: uploadPath,
