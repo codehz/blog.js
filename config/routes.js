@@ -135,7 +135,7 @@ module.exports = function (mongoose, express, app, db) {
         utils.requiredParams('groupId'),
         GroupController._getGroup,
         GroupController.delete);
-    apiRoutes.post('/grouop/:groupId',
+    apiRoutes.post('/group/:groupId',
         GroupController._checkPermission,
         utils.requiredParams('groupId'),
         utils.requiredBody('blog'),
