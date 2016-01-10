@@ -13,7 +13,8 @@ module.exports = function (mongoose, config, db) {
 
         _getGroup(req, res, next) {
             db.Group.findById(req.params.groupId, (err, group) => {
-                if (err) return utils.error(res, 404);
+                if (err) return utils.error(res, 422, err);
+                if (!group) return utils.error(res, 404);
                 req.group = group;
                 next();
             });
