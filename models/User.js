@@ -18,7 +18,7 @@ module.exports = function (mongoose) {
                 admin_comment: { type: Boolean, default: false }
             }]
         },
-        group: { type: Schema.Types.ObjectId, ref: 'Group', required: true }
+        group: { type: String, ref: 'Group', required: true }
     });
 
     userSchema.pre('save', function (next) {
