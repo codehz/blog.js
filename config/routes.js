@@ -32,12 +32,12 @@ module.exports = function (mongoose, express, app, db) {
 
     apiRoutes.get('/article/:articleId?', ArticleController.get);
     apiRoutes.get('/file/:fileId', utils.requiredParams('fileId'), FileController.redirect);
-    apiRoutes.get('/article/:articleId/comment/:commentId',
+    apiRoutes.get('/article/:articleId/public/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
         ArticleController.Comment.preComment,
         ArticleController.Comment.getSingle);
-    apiRoutes.get('/article/:articleId/comment', utils.requiredParams('articleId'),
+    apiRoutes.get('/article/:articleId/public/comment', utils.requiredParams('articleId'),
         ArticleController.Comment.preComment, ArticleController.Comment.getAll);
 
     // Middleware to check user auth
