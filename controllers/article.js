@@ -134,11 +134,11 @@ module.exports = function (mongoose, config, db) {
         },
         get(req, res) {
             const id = req.params.articleId;
-            db.Article.findOne({id}).populate("user").exec((err, article) => {
+            db.Article.findOne({ id }).populate("user").exec((err, article) => {
                 if (err) return utils.error(res, 422, err.message);
                 if (!article) return utils.error(res, 404);
                 if (article.draft && !(req.user && (req.user.isSuperUser() || req.user.id == article.user.id)))
-                return utils.error(res, 422, err.message);
+                    return utils.error(res, 422, err.message);
                 utils.responseData(res, article.id, article);
             })
         },
@@ -198,7 +198,8 @@ module.exports = function (mongoose, config, db) {
 
             create(req, res) {
                 if (!req.article.comments) req.article.comments = [];
-                if (!req.user.isSuperUser()
+                if (req.params.commentId
+                    && !req.user.isSuperUser()
                     && req.comment.hide
                     && (!req.user || req.article.user.id != req.user.id)
                     && req.comment.user.id != req.user.id)
