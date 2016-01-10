@@ -114,7 +114,15 @@ module.exports = function (mongoose, config, db) {
                     name: req.body.name,
                     password: req.body.password,
                     email: req.body.email,
-                    session: Math.random()
+                    blog: {
+                        default_permission: [{
+                            _id: mongoose.Types.ObjectId('default'),
+                            read: true,
+                            comment: true,
+                            update: false,
+                            admin_comment: false
+                        }]
+                    }
                 });
 
                 db.Group.setDefaultGroup(newUser, () => {
