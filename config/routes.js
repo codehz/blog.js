@@ -8,6 +8,7 @@ module.exports = function (mongoose, express, app, db) {
         , UserController = require('../controllers/user')(mongoose, config, db)
         , ArticleController = require('../controllers/article.js')(mongoose, config, db)
         , FileController = require('../controllers/file.js')(mongoose, config, db)
+        , GroupController = require('../controllers/group.js')(mongoose, config, db)
         , apiRoutes = express.Router();
     const fileUpload = multer({
         dest: '/tmp',
@@ -109,7 +110,34 @@ module.exports = function (mongoose, express, app, db) {
         ArticleController.Comment._getComment,
         ArticleController.Comment.changeHideState);
 
-    apiRoutes.post('/file', fileUpload.single('file'), FileController.upload);
-    apiRoutes.delete('/file/:fileId', utils.requiredParams('fileId'), FileController.delete);
+    apiRoutes.post('/file', fileUpload._checkPermission, fileUpload.single('file'), FileController.upload);
+    apiRoutes.delete('/file/:fileId', fileUpload._checkPermission, utils.requiredParams('fileId'), FileController.delete);
     apiRoutes.get('/file', FileController.get);
+
+    apiRoutes.get('/group', GroupController._checkPermission, GroupController.getAll);
+    apiRoutes.get('/group/:groupId',
+        GroupController._checkPermission,
+        utils.requiredParams('groupId'),
+        GroupController.getSingle);
+    apiRoutes.put('/group/:groupId',
+        GroupController._checkPermission,
+        utils.requiredParams('groupId'),
+        GroupController._getGroup,
+        GroupController.update);
+    apiRoutes.delete('/group/:groupId',
+        GroupController._checkPermission,
+        utils.requiredParams('groupId'),
+        GroupController._getGroup,
+        GroupController.delete);
+    apiRoutes.push('/grouop/:groupId',
+        GroupController._checkPermission,
+        utils.requiredParams('groupId'),
+        utils.requiredBody('blog'),
+        utils.requiredBody('common'),
+        GroupController.create);
+    apiRoutes.put('/group/:groupId',
+        GroupController._checkPermission,
+        utils.requiredParams('groupId'),
+        GroupController._getGroup,
+        GroupController.update);
 }

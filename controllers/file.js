@@ -21,6 +21,13 @@ module.exports = function (mongoose, config, db) {
     }
 
     return {
+        _checkPermission(req, res, next) {
+            return (req, res, next) => {
+                if (req.user.isSuperUser() || req.user.group.common.uploadFile) return next();
+                utils.error(res, 403);
+            }
+        },
+        
         upload(req, res) {
             if (req.file && req.file.originalname) {
                 let ext = path.extname(req.file.originalname);

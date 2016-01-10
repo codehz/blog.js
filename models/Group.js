@@ -5,9 +5,12 @@ module.exports = function (mongoose) {
     let groupScheme = new Schema({
         _id: { type: String, index: { unique: true } },
         admin: { type: Boolean, default: false },
+        common: {
+            fileUpload: { type: Boolean, default: false },
+        },
         blog: {
             create: { type: Boolean, default: false },
-        }
+        },
     });
     
     groupScheme.virtual('name').get(function () {
