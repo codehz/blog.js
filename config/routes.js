@@ -84,6 +84,13 @@ module.exports = function (mongoose, express, app, db) {
         utils.requiredParams('commentId'),
         ArticleController.Comment.preComment,
         ArticleController.Comment.delete);
+    apiRoutes.get('/article/:articleId/comment/:commentId',
+        utils.requiredParams('articleId'),
+        utils.requiredParams('commentId'),
+        ArticleController.Comment.preComment,
+        ArticleController.Comment.getSingle);
+    apiRoutes.get('/article/:articleId/comment', utils.requiredParams('articleId'),
+        ArticleController.Comment.preComment, ArticleController.Comment.getAll);
 
     apiRoutes.post('/file', fileUpload.single('file'), FileController.upload);
     apiRoutes.delete('/file/:fileId', utils.requiredParams('fileId'), FileController.delete);
