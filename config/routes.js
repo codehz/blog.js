@@ -30,9 +30,10 @@ module.exports = function (mongoose, express, app, db) {
         utils.checkPassword, utils.validateEmail, UserController.login);
     apiRoutes.post('/register', utils.requiredFields("name password email phone"),
         utils.checkPassword, utils.validateEmail, utils.validatePhone, UserController.register);
+    
+    apiRoutes.get('/file/:fileId', utils.requiredParams('fileId'), FileController.redirect);
 
     apiRoutes.get('/public/article/:articleId?', ArticleController.get);
-    apiRoutes.get('/public/file/:fileId', utils.requiredParams('fileId'), FileController.redirect);
     apiRoutes.get('/public/article/:articleId/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
@@ -69,6 +70,7 @@ module.exports = function (mongoose, express, app, db) {
         }
     });
 
+    apiRoutes.get('/article/:articleId?', ArticleController.get);
     apiRoutes.post('/article', utils.requiredBody('title'), utils.requiredBody('content'),
         ArticleController._checkBlogPermission('create'),
         ArticleController.create);
