@@ -44,7 +44,7 @@ module.exports = function (mongoose, config, db) {
                 if (err) return utils.error(res, 422, err);
                 if (article.user_id != req.user.id) return utils.error(res, 403, "Forbidden");
                 if (!article) return utils.error(res, 404);
-                db.Comment.remove({ target_article_id: article.id }, err => err
+                db.Comment.find({ target_article_id: article.id }).remove(err => err
                     ? utils.error(res, 422, err)
                     : article.remove(err => err
                         ? utils.error(res, 422, err)
