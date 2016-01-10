@@ -17,6 +17,7 @@ module.exports = function (mongoose, config, db) {
             },
             keywords: article.keywords,
             content: article.content,
+            draft: article.draft,
             permission: owner ? article.permission : undefined
         }
     }
