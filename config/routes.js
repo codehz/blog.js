@@ -30,10 +30,11 @@ module.exports = function (mongoose, express, app, db) {
         utils.checkPassword, utils.validateEmail, UserController.login);
     apiRoutes.post('/register', utils.requiredFields("name password email phone"),
         utils.checkPassword, utils.validateEmail, utils.validatePhone, UserController.register);
-    
+
     apiRoutes.get('/file/:fileId', utils.requiredParams('fileId'), FileController.redirect);
 
-    apiRoutes.get('/public/article/:articleId?', ArticleController.find);
+    apiRoutes.get('/public/article/:articleId', utils.requiredParams('articleId'), ArticleController.get);
+    apiRoutes.get('/public/article', ArticleController.find);
     apiRoutes.get('/public/article/:articleId/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
@@ -69,10 +70,11 @@ module.exports = function (mongoose, express, app, db) {
             return utils.error(res, 401, "No Token");
         }
     });
-    
+
     apiRoutes.get('/me', UserController.current);
 
-    apiRoutes.get('/article/:articleId?', ArticleController.find);
+    apiRoutes.get('/article/:articleId', utils.requiredParams('articleId'), ArticleController.get);
+    apiRoutes.get('/article', ArticleController.find);
     apiRoutes.post('/article', utils.requiredBody('title'), utils.requiredBody('content'),
         ArticleController._checkBlogPermission('create'),
         ArticleController.create);

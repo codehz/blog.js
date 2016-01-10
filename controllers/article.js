@@ -100,7 +100,8 @@ module.exports = function (mongoose, config, db) {
                     user: req.user,
                     content: req.body.content,
                     keywords: keyword.split(','),
-                    permission: req.user.blog.permission
+                    permission: req.user.blog.permission,
+                    draft: req.body.draft ? req.body.draft : false
                 });
                 article.save(err => err ?
                     db.Sequence.SequenceRollback("articles", utils.error(res, 422, err.message)) :
@@ -130,23 +131,28 @@ module.exports = function (mongoose, config, db) {
             req.article.save((err, article) => err ? utils.error(res, 422, err.message)
                 : utils.success(res, articleResponse(article)));
         },
-        find(req, res) {
+        get(req, res) {
             const id = req.params.articleId;
+            db.Article.findOne({id}).populate("user").exec((err, article) => {
+                if (err) return utils.error(res, 422, err.message);
+                if (!article) return utils.error(res, 404);
+                if (article.draft && !(req.user && (req.user.isSuperUser() || req.user.id == article.user.id)))
+                return utils.error(res, 422, err.message);
+                utils.responseData(res, article.id, article);
+            })
+        },
+        find(req, res) {
             let query = {};
             let sortBy = null;
 
-            if (id) {
-                query = { id };
-            } else {
-                sortBy = {};
-                sortBy["order_by"] = "created_at";
-                sortBy["order_type"] = "desc";
-                if (req.query.title) query["title"] = req.query.title;
-                if (req.query.user_id) query["user.id"] = req.query.user_id;
-                if (req.query.keywords) query["keywords"] = { $in: req.query.keywords.split(',') }
-                if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
-                if (req.query.draft) query["draft"] = req.query.draft;
-            }
+            sortBy = {};
+            sortBy["order_by"] = "created_at";
+            sortBy["order_type"] = "desc";
+            if (req.query.title) query["title"] = req.query.title;
+            if (req.query.user_id) query["user.id"] = req.query.user_id;
+            if (req.query.keywords) query["keywords"] = { $in: req.query.keywords.split(',') }
+            if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
+            if (req.query.draft) query["draft"] = req.query.draft;
 
             const queryRequest = db.Article.find(query);
             if (sortBy) {
