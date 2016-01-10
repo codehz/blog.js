@@ -155,7 +155,7 @@ module.exports = function (mongoose, config, db) {
 
             getAll(req, res) {
                 // Only bloggers and commentators can see the hidden comments
-                let ret = req.user && (!req.user.isSuperUser() || req.article.user.id == req.user.id) ? req.article.comments
+                let ret = req.user && (req.user.isSuperUser() || req.article.user.id == req.user.id) ? req.article.comments
                     : req.article.comments.filter(comment => !comment.hide || (req.user && comment.user.id == req.user.id))
                 utils.responseData(res, ret.count, ret.map(comment => commentResponse(comment)));
             },
