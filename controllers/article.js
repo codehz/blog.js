@@ -204,7 +204,11 @@ module.exports = function (mongoose, config, db) {
                     && (!req.user || req.article.user.id != req.user.id)
                     && req.comment.user.id != req.user.id)
                     return utils.error(res, 404);
-                req.article.comments.push({ user: req.user, content: req.body.content, ref_id: req.comment.id });
+                req.article.comments.push({
+                    user: req.user,
+                    content: req.body.content,
+                    ref_id: req.comment ? req.comment.id : undefined
+                });
                 req.article.save(err => err ? utils.error(res, 422, err.message)
                     : utils.responseData(res, "post successful"));
             },
