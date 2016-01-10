@@ -116,7 +116,7 @@ module.exports = function (mongoose, config, db) {
                     email: req.body.email,
                     blog: {
                         default_permission: [{
-                            _id: mongoose.Types.ObjectId('default'),
+                            _id: 'default',
                             read: true,
                             comment: true,
                             update: false,
