@@ -4,6 +4,7 @@ module.exports = function (mongoose, config, db) {
     const utils = require('../lib/utils')();
 
     function articleResponse(article, owner) {
+        console.log(article, owner);
         const user = article.user;
         return {
             id: article.id,
@@ -22,7 +23,6 @@ module.exports = function (mongoose, config, db) {
     }
 
     function commentResponse(comment, owner) {
-        console.log(comment, owner);
         const user = comment.user;
         return {
             id: comment.id,
