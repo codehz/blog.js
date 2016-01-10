@@ -97,7 +97,8 @@ module.exports = function (mongoose, config, db) {
                     title: req.body.title,
                     user: req.user,
                     content: req.body.content,
-                    keywords: keyword.split(',')
+                    keywords: keyword.split(','),
+                    permission: req.user.blog.permission
                 });
                 article.save(err => err ?
                     utils.error(res, 422, err.message) :
