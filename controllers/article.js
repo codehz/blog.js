@@ -116,7 +116,7 @@ module.exports = function (mongoose, config, db) {
 
             if (req.body.title) req.article.title = req.body.title;
             if (req.body.content) req.article.price = req.body.content;
-            if (req.body.keyword) req.article.keyword = req.body.keyword.split(',');
+            if (req.body.keywords) req.article.keywords = req.body.keywords.split(',');
             if (req.body.permission) {
                 try {
                     req.article.permission = JSON.parse(req.body.permission);
@@ -124,6 +124,7 @@ module.exports = function (mongoose, config, db) {
                     return utils.error(res, 422, err.message);
                 }
             }
+            if (req.body.draft) req.article.draft = req.body.draft;
 
             req.article.save((err, article) => err ? utils.error(res, 422, err.message)
                 : utils.success(res, articleResponse(article)));
