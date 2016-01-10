@@ -29,7 +29,7 @@ module.exports = function (mongoose) {
             if (err) return next(err);
             user.password = hash;
             if (user.blog.default_permission.count == 0) {
-                user.blog.default_permission..push({
+                user.blog.default_permission.push({
                     _id: mongoose.Types.ObjectId('default'),
                     read: true,
                     comment: true,
