@@ -31,14 +31,14 @@ module.exports = function (mongoose, express, app, db) {
     apiRoutes.post('/register', utils.requiredFields("name password email phone"),
         utils.checkPassword, utils.validateEmail, utils.validatePhone, UserController.register);
 
-    apiRoutes.get('/article/:articleId?', ArticleController.get);
-    apiRoutes.get('/file/:fileId', utils.requiredParams('fileId'), FileController.redirect);
-    apiRoutes.get('/article/:articleId/public/comment/:commentId',
+    apiRoutes.get('/public/article/:articleId?', ArticleController.get);
+    apiRoutes.get('/public/file/:fileId', utils.requiredParams('fileId'), FileController.redirect);
+    apiRoutes.get('/public/article/:articleId/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
         ArticleController._getArticle,
         ArticleController.Comment.getSingle);
-    apiRoutes.get('/article/:articleId/public/comment', utils.requiredParams('articleId'),
+    apiRoutes.get('/public/article/:articleId/comment', utils.requiredParams('articleId'),
         ArticleController._getArticle, ArticleController.Comment.getAll);
 
     // Middleware to check user auth

@@ -156,7 +156,7 @@ module.exports = function (mongoose, config, db) {
                 if (err) return utils.error(res, 422, err.message);
                 if (!dbResponse) return utils.error(res, 404);
                 utils.responseData(res, dbResponse.count, dbResponse.map(article =>
-                    articleResponse(article, req.user.isSuperUser() || req.user.id == article.user.id)));
+                    articleResponse(article, req.user && (req.user.isSuperUser() || req.user.id == article.user.id))));
             })
         },
         Comment: {
