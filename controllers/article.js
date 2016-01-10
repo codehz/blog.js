@@ -38,9 +38,9 @@ module.exports = function (mongoose, config, db) {
     return {
         _checkBlogPermission(permission) {
             return (req, res, next) => {
-                if (req.user.id == 0) return next();
+                if (req.user.isSuperUser()) return next();
                 if (req.user.group.blog[permission]) return next();
-                utils.error(res, 403, "Forbidden");
+                utils.error(res, 403);
             }
         },
 
@@ -52,11 +52,11 @@ module.exports = function (mongoose, config, db) {
                         if (err) return utils.error(res, 422, err);
                         if (!article) return utils.error(res, 404);
                         req.article = article;
-                        if (req.user.id == 0) return next();
+                        if (req.user.isSuperUser()) return next();
                         if (article.user.id != req.user.id) return next();
                         let target = article.permission.id(req.user.group) || article.permission[0];
                         if (target[permission]) return next();
-                        utils.error(res, 403, "Forbidden");
+                        utils.error(res, 403);
                     });
             }
         },
@@ -72,7 +72,7 @@ module.exports = function (mongoose, config, db) {
                         if (article.user.id != req.user.id) return next();
                         let target = article.permission.id(req.user.group) || article.permission[0];
                         if (permissions.filter(permission => target[permission]).count != 0) return next();
-                        utils.error(res, 403, "Forbidden");
+                        utils.error(res, 403);
                     });
             }
         },
@@ -107,13 +107,13 @@ module.exports = function (mongoose, config, db) {
         },
         delete(req, res) {
             let article = req.article;
-            if (req.user.id != 0 && article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
+            if (!req.user.isSuperUser() && article.user.id != req.user.id) return utils.error(res, 403);
             article.remove(err => err ? utils.error(res, 422)
                 : utils.success(res, "delete successful"));
         },
         update(req, res) {
             let article = req.article;
-            if (req.user.id != 0 && article.user.id != req.user.id) return utils.error(res, 403, "Forbidden");
+            if (!req.user.isSuperUser() && article.user.id != req.user.id) return utils.error(res, 403);
 
             if (req.body.title) article.title = req.body.title;
             if (req.body.content) article.price = req.body.content;
@@ -155,7 +155,7 @@ module.exports = function (mongoose, config, db) {
 
             getAll(req, res) {
                 // Only bloggers and commentators can see the hidden comments
-                let ret = req.user && req.user.id != 0 || req.article.user.id == req.user.id ? req.article.comments
+                let ret = req.user && !req.user.isSuperUser() || req.article.user.id == req.user.id ? req.article.comments
                     : req.article.comments.filter(comment => !comment.hide && req.user && comment.user.id != req.user.id)
                 utils.responseData(res, ret.count, ret.map(comment => commentResponse(comment)));
             },
@@ -163,12 +163,12 @@ module.exports = function (mongoose, config, db) {
             getSingle(req, res) {
                 let comment = req.article.comments.id(req.params.commentId);
                 if (!comment) return utils.error(res, 404);
-                if (req.user.id != 0
+                if (!req.user.isSuperUser()
                     && comment.hide
                     && !req.user
                     || req.article.user.id != req.user.id
                     && comment.user.id != req.user.id)
-                    return utils.error(res, 403, "Forbidden");
+                    return utils.error(res, 403);
                 utils.responseData(res, "", commentResponse(comment));
             },
 
@@ -184,7 +184,7 @@ module.exports = function (mongoose, config, db) {
                 if (!comment) return utils.error(res, 404);
                 comment.remove();
                 req.article.save(err => err ? utils.error(res, 422, err.message)
-                    : utils.responseData(res, "post successful"));
+                    : utils.responseData(res, "delete successful"));
             }
         }
     }

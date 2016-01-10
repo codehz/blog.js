@@ -31,6 +31,10 @@ module.exports = function (mongoose) {
         });
     });
 
+    userSchema.methods.isSuperUser = function () {
+        return this.id == 0;
+    }
+
     userSchema.methods.comparePassword = function (passwordToCompareWith, next) {
         bcrypt.compare(passwordToCompareWith, this.password, (err, valid) => {
             if (err) return next(err);
