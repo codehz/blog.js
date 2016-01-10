@@ -45,8 +45,9 @@ module.exports = function (mongoose, config, db) {
                 if (err) return utils.error(res, 422, err);
                 if (!target_article) return utils.error(res, 404);
                 if (req.body.target) {
-                    db.Comment.findOne({ id: req.body.target }, (err, target) =>
-                        createComment(res, req.body.content, req.user, target_article, target));
+                    db.Comment.findOne({ id: req.body.target }, (err, target) => target.target_article != target_article
+                        ? utils.error(res, 422)
+                        : createComment(res, req.body.content, req.user, target_article, target));
                 } else {
                     createComment(res, req.body.content, req.user, target_article);
                 }
