@@ -14,7 +14,8 @@
     "body-parser": "*",
     "morgan": "*",
     "multer": "*",
-    "express-validator": "^2"
+    "express-validator": "^2",
+    "connect-jade-static": "*"
   },
   "license": "MIT"
 }
