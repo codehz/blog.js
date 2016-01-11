@@ -1,6 +1,6 @@
 FROM node:latest
 
-ADD . /app
+ADD ./package.json /app/package.json
 WORKDIR /app
 
 RUN npm install && mkdir uploads
@@ -11,6 +11,6 @@ ENV DB_BASE "mongodb://localhost/"
 
 EXPOSE 80
 
-VOLUME /app/uploads
+VOLUME /app
 
-CMD ["node", "app.js"]
+CMD ["npm", "start"]
