@@ -9,7 +9,6 @@ module.exports = function (mongoose, express, app, db) {
         ArticleController = require('../controllers/article.js')(mongoose, config, db),
         CategoryController = require('../controllers/category.js')(mongoose, config, db),
         FileController = require('../controllers/file.js')(mongoose, config, db),
-        GroupController = require('../controllers/group.js')(mongoose, config, db),
         apiRoutes = express.Router();
     const fileUpload = multer({
         dest: '/tmp',
