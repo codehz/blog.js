@@ -68,9 +68,9 @@ module.exports = function (mongoose, config, db) {
                     keywords: keyword.split(','),
                     draft: req.body.draft ? req.body.draft : false
                 });
-                article.save(err => err ?
+                db.Category.setCategory(req.body.category, article, () => article.save(err => err ?
                     db.Sequence.SequenceRollback("articles", utils.error(res, 422, err.message)) :
-                    utils.success(res, "update success!"));
+                    utils.success(res, "update success!")));
             })
         },
         delete(req, res) {
