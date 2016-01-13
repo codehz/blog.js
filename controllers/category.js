@@ -21,10 +21,29 @@ module.exports = function (mongoose, config, db) {
                 utils.responseData(res, categories.count, categories);
             });
         },
-        
+
         redirectQuery(req, res, next) {
             req.query.category = req.params.categoryId;
             next();
+        },
+
+        setupPublic(Router) {
+            const categoryRouter = new Router();
+            categoryRouter.param('categoryId', utils.requiredParams('categoryId'));
+
+            categoryRouter.get('/category/:categoryId?', this.listCategory);
+            categoryRouter.get('/category/:categoryId/articles', this.redirectQuery);
+            
+            return categoryRouter;
+        },
+        
+        setup(Router) {
+            const categoryRouter = new Router();
+            categoryRouter.param('categoryId', utils.requiredParams('categoryId'));
+            
+            categoryRouter.post('/category/:categoryId', this.redirectQuery);
+            
+            return categoryRouter;
         }
     }
 }

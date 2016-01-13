@@ -21,13 +21,6 @@ module.exports = function (mongoose, config, db) {
     }
 
     return {
-        _checkPermission(req, res, next) {
-            return (req, res, next) => {
-                if (req.user.isSuperUser() || req.user.group.common.uploadFile) return next();
-                utils.error(res, 403);
-            }
-        },
-        
         upload(req, res) {
             if (req.file && req.file.originalname) {
                 let ext = path.extname(req.file.originalname);
@@ -115,6 +108,17 @@ module.exports = function (mongoose, config, db) {
                 res.redirect(301, "http://" + config.host + (config.port == 80 ? "" : ":" + config.port)
                     + config.uploadDir + "/" + file.id + file.ext);
             })
+        },
+        setupPublic(Router) {
+            const fileRouter = new Router();
+            fileRouter.get('/redirect/:fileId', this.redirect);
+            return fileRouter;
+        },
+        setup(Router, fileUpload) {
+            const fileRouter = new Router();
+            fileRouter.route('/file').get(this.find).post(utils.checkSuperUser, fileUpload.single('file'), this.upload);
+            fileRouter.route('/file/:fileId').get(this.get).delete(utils.checkSuperUser, this.delete);
+            return fileRouter;
         }
     }
 }
