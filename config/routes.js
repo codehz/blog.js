@@ -27,23 +27,25 @@ module.exports = function (mongoose, express, app, db) {
         res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,Authorization');
         next();
     });
+
+    apiRoutes.param('fileId', utils.requiredParams('fileId'));
+    apiRoutes.param('articleId', utils.requiredParams('articleId'));
+    apiRoutes.param('commentId', utils.requiredParams('commentId'));
+    apiRoutes.param('groupId', utils.requiredParams('groupId'));
+    apiRoutes.param('parent', utils.requiredParams('parent'));
+
     apiRoutes.post('/login', utils.requiredFields("email password"),
         utils.checkPassword, utils.validateEmail, UserController.login);
     apiRoutes.post('/register', utils.requiredFields("name password email phone"),
         utils.checkPassword, utils.validateEmail, utils.validatePhone, UserController.register);
 
-    apiRoutes.get('/file/:fileId', utils.requiredParams('fileId'), FileController.redirect);
+    apiRoutes.get('/file/:fileId', FileController.redirect);
 
-    apiRoutes.get('/public/article/:articleId', utils.requiredParams('articleId'), ArticleController.get);
-    apiRoutes.get('/public/article', ArticleController.find);
+    apiRoutes.route('/public/article').get(ArticleController.find)
+        .route(':articleId').get(ArticleController.get)
+        .route('comment').get(ArticleController._getArticle, ArticleController.Comment.getAll)
+        .route(':commentId').get(ArticleController._getArticle, ArticleController.Comment.getSingle)
     apiRoutes.get('/public/category/:parent', CategoryController.listCategory);
-    apiRoutes.get('/public/article/:articleId/comment/:commentId',
-        utils.requiredParams('articleId'),
-        utils.requiredParams('commentId'),
-        ArticleController._getArticle,
-        ArticleController.Comment.getSingle);
-    apiRoutes.get('/public/article/:articleId/comment', utils.requiredParams('articleId'),
-        ArticleController._getArticle, ArticleController.Comment.getAll);
 
     // Middleware to check user auth
     apiRoutes.use(function (req, res, next) {
@@ -75,80 +77,38 @@ module.exports = function (mongoose, express, app, db) {
 
     apiRoutes.get('/me', UserController.current);
 
-    apiRoutes.get('/article/:articleId', utils.requiredParams('articleId'), ArticleController.get);
-    apiRoutes.get('/article', ArticleController.find);
-    apiRoutes.post('/article', utils.requiredBody('title'),
-        utils.requiredBody('category'),
-        utils.requiredBody('content'),
-        ArticleController._checkBlogPermission('create'),
-        ArticleController.create);
-    apiRoutes.delete('/article/:articleId', utils.requiredParams('articleId'),
-        ArticleController._getArticleAndCheckPermission('adminComment'),
-        ArticleController.delete);
-    apiRoutes.put('/article/:articleId', utils.requiredParams('articleId'),
-        ArticleController._getArticleAndCheckPermission('update'),
-        ArticleController.update);
+    apiRoutes.route('/article')
+        .get(ArticleController.find)
+        .route(':articleId')
+        .get(ArticleController.get)
+        .post(utils.requiredBody('title'),
+            utils.requiredBody('category'),
+            utils.requiredBody('content'),
+            ArticleController._checkBlogPermission('create'),
+            ArticleController.create)
+        .delete(ArticleController._getArticleAndCheckPermission('adminComment'),
+            ArticleController.delete)
+        .put(ArticleController._getArticleAndCheckPermission('update'),
+            ArticleController.update);
 
-    apiRoutes.post('/article/:articleId/comment',
-        utils.requiredParams('articleId'),
-        ArticleController._getArticleAndCheckPermission('comment'),
-        ArticleController.Comment.create);
-    apiRoutes.post('/article/:articleId/comment/:commentId',
-        utils.requiredParams('articleId'),
-        utils.requiredParams('commentId'),
-        ArticleController._getArticleAndCheckPermission('comment'),
-        ArticleController.Comment._getComment,
-        ArticleController.Comment.create);
-    apiRoutes.delete('/article/:articleId/comment/:commentId',
-        utils.requiredParams('articleId'),
-        utils.requiredParams('commentId'),
-        ArticleController._getArticleAndCheckPermissionOr('comment', 'admin_comment'),
-        ArticleController.Comment._getComment,
-        ArticleController.Comment.delete);
-    apiRoutes.get('/article/:articleId/comment/:commentId',
-        utils.requiredParams('articleId'),
-        utils.requiredParams('commentId'),
-        ArticleController._getArticle,
-        ArticleController.Comment._getComment,
-        ArticleController.Comment.getSingle);
-    apiRoutes.get('/article/:articleId/comment', utils.requiredParams('articleId'),
-        ArticleController._getArticle, ArticleController.Comment.getAll);
-    apiRoutes.put('/article/:articleId/comment/:commentId',
-        utils.requiredParams('articleId'),
-        utils.requiredParams('commentId'),
-        ArticleController._getArticle,
-        ArticleController.Comment._getComment,
-        ArticleController.Comment.changeHideState);
+    apiRoutes.route('/article/:articleId/comment')
+        .use(ArticleController._getArticle)
+        .get(ArticleController.Comment.getAll)
+        .post(ArticleController._checkBlogPermission,
+            ArticleController.Comment.create)
+        .route(':commentId')
+        .use(ArticleController.Comment._getComment)
+        .get(ArticleController.Comment.getSingle)
+        .use(ArticleController._checkBlogPermission)
+        .post(ArticleController.Comment.create)
+        .delete(ArticleController.Comment.delete)
+        .put(ArticleController.Comment.changeHideState);
 
-    apiRoutes.post('/file', FileController._checkPermission, fileUpload.single('file'), FileController.upload);
-    apiRoutes.delete('/file/:fileId', FileController._checkPermission, utils.requiredParams('fileId'), FileController.delete);
-    apiRoutes.get('/file', FileController.get);
+    apiRoutes.route('/file')
+        .get(FileController.get)
+        .post(FileController._checkPermission, fileUpload.single('file'), FileController.upload)
+        .delete(':fileId', FileController._checkPermission, FileController.delete);
 
-    apiRoutes.get('/group', GroupController._checkPermission, GroupController.getAll);
-    apiRoutes.get('/group/:groupId',
-        GroupController._checkPermission,
-        utils.requiredParams('groupId'),
-        GroupController._getGroup,
-        GroupController.getSingle);
-    apiRoutes.put('/group/:groupId',
-        GroupController._checkPermission,
-        utils.requiredParams('groupId'),
-        GroupController._getGroup,
-        GroupController.update);
-    apiRoutes.delete('/group/:groupId',
-        GroupController._checkPermission,
-        utils.requiredParams('groupId'),
-        GroupController._getGroup,
-        GroupController.delete);
-    apiRoutes.post('/group/:groupId',
-        GroupController._checkPermission,
-        utils.requiredParams('groupId'),
-        utils.requiredBody('blog'),
-        utils.requiredBody('common'),
-        GroupController.create);
-    apiRoutes.put('/group/:groupId',
-        GroupController._checkPermission,
-        utils.requiredParams('groupId'),
-        GroupController._getGroup,
-        GroupController.update);
+    apiRoutes.route('/category')
+        .get(':parent?', CategoryController.listCategory)
 }

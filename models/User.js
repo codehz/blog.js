@@ -8,17 +8,6 @@ module.exports = function (mongoose) {
         password: { type: String, required: true },
         phone: String,
         email: { type: String, required: true, index: { unique: true } },
-
-        blog: {
-            default_permission: [{
-                _id: { type: String, ref: 'Group' },
-                read: { type: Boolean, default: true },
-                comment: { type: Boolean, default: true },
-                update: { type: Boolean, default: false },
-                admin_comment: { type: Boolean, default: false }
-            }]
-        },
-        group: { type: String, ref: 'Group', required: true }
     });
 
     userSchema.pre('save', function (next) {

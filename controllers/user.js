@@ -122,17 +122,14 @@ module.exports = function (mongoose, config, db) {
                         }]
                     }
                 });
-
-                db.Group.setDefaultGroup(newUser, () => {
-                    newUser.save(function (err, newUser) {
-                        if (err) return db.Sequence.SequenceRollback("users", () => utils.error(res, 422, err.message));
-                        let fakeUser = { id: newUser.id, _id: newUser._id };
-                        var token = jwt.sign(fakeUser, config.secret, {
-                            expiresIn: 3600 * 24// expires in 24 hours
-                        });
-
-                        return utils.success(res, { token });
+                newUser.save(function (err, newUser) {
+                    if (err) return db.Sequence.SequenceRollback("users", () => utils.error(res, 422, err.message));
+                    let fakeUser = { id: newUser.id, _id: newUser._id };
+                    var token = jwt.sign(fakeUser, config.secret, {
+                        expiresIn: 3600 * 24// expires in 24 hours
                     });
+
+                    return utils.success(res, { token });
                 });
             });
         },

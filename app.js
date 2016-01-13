@@ -51,4 +51,5 @@ app.use('/', express.static(config.publicPath));
 //app.use(jadeStatic({ baseDir: config.publicPath, baseUrl: '/', jade: { pretty: true } }));
 
 app.listen(config.port);
+console.log(app.routes);
 console.log("Server is working on http://" + config.host + ":" + config.port);

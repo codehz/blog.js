@@ -18,14 +18,6 @@ module.exports = function (mongoose) {
         }],
         draft: { type: Boolean, default: true },
         category: {type:String, ref: 'Category'},
-
-        permission: [{
-            _id: { type: String, ref: 'Group' },
-            read: { type: Boolean, default: true },
-            comment: { type: Boolean, default: true },
-            update: { type: Boolean, default: true },
-            admin_comment: { type: Boolean, default: true }
-        }]
     });
 
     articleScheme.index({ created_at: -1 });

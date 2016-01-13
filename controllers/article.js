@@ -18,7 +18,6 @@ module.exports = function (mongoose, config, db) {
             keywords: article.keywords,
             content: article.content,
             draft: article.draft,
-            permission: owner ? article.permission : undefined
         }
     }
 
@@ -39,44 +38,10 @@ module.exports = function (mongoose, config, db) {
     }
 
     return {
-        _checkBlogPermission(permission) {
+        _checkBlogPermission() {
             return (req, res, next) => {
                 if (req.user.isSuperUser()) return next();
-                if (req.user.group.blog[permission]) return next();
                 utils.error(res, 403);
-            }
-        },
-
-        _getArticleAndCheckPermission(permission) {
-            return (req, res, next) => {
-                db.Article.findOne({ id: req.params.articleId })
-                    .populate('user')
-                    .populate('comments.user').exec((err, article) => {
-                        if (err) return utils.error(res, 422, err);
-                        if (!article) return utils.error(res, 404);
-                        req.article = article;
-                        if (req.user.isSuperUser()) return next();
-                        if (article.user.id != req.user.id) return next();
-                        let target = article.permission.id(req.user.group) || article.permission[0];
-                        if (target[permission]) return next();
-                        utils.error(res, 403);
-                    });
-            }
-        },
-
-        _getArticleAndCheckPermissionOr(permissions) {
-            return (req, res, next) => {
-                db.Article.findOne({ id: req.params.articleId })
-                    .populate('user')
-                    .populate('comments.user').exec((err, article) => {
-                        if (err) return utils.error(res, 422, err);
-                        if (!article) return utils.error(res, 404);
-                        req.article = article;
-                        if (article.user.id != req.user.id) return next();
-                        let target = article.permission.id(req.user.group) || article.permission[0];
-                        if (permissions.filter(permission => target[permission]).count != 0) return next();
-                        utils.error(res, 403);
-                    });
             }
         },
 
@@ -101,7 +66,6 @@ module.exports = function (mongoose, config, db) {
                     user: req.user,
                     content: req.body.content,
                     keywords: keyword.split(','),
-                    permission: req.user.blog.default_permission,
                     draft: req.body.draft ? req.body.draft : false
                 });
                 article.save(err => err ?
@@ -120,13 +84,6 @@ module.exports = function (mongoose, config, db) {
             if (req.body.title) req.article.title = req.body.title;
             if (req.body.content) req.article.price = req.body.content;
             if (req.body.keywords) req.article.keywords = req.body.keywords.split(',');
-            if (req.body.permission) {
-                try {
-                    req.article.permission = JSON.parse(req.body.permission);
-                } catch (err) {
-                    return utils.error(res, 422, err.message);
-                }
-            }
             if (req.body.draft) req.article.draft = req.body.draft;
 
             req.article.save((err, article) => err ? utils.error(res, 422, err.message)
