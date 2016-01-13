@@ -42,9 +42,9 @@ module.exports = function (mongoose, express, app, db) {
 
     const public_article = apiRoutes.route('/public/article');
     public_article.get(ArticleController.find);
-    public_article.get(':articleId', ArticleController.get);
-    public_article.get('comment', ArticleController._getArticle, ArticleController.Comment.getAll);
-    public_article.get(':commentId', ArticleController._getArticle, ArticleController.Comment.getSingle);
+    public_article.get('/:articleId', ArticleController.get);
+    public_article.get('/comment', ArticleController._getArticle, ArticleController.Comment.getAll);
+    public_article.get('/:commentId', ArticleController._getArticle, ArticleController.Comment.getSingle);
     apiRoutes.get('/public/category/:parent', CategoryController.listCategory);
 
     // Middleware to check user auth
@@ -103,10 +103,10 @@ module.exports = function (mongoose, express, app, db) {
     apiRoutes.route('/file')
         .get(FileController.get)
         .post(utils.checkSuperUser, fileUpload.single('file'), FileController.upload)
-        .delete(':fileId', utils.checkSuperUser, FileController.delete);
+        .delete('/:fileId', utils.checkSuperUser, FileController.delete);
 
     apiRoutes.route('/category')
-        .get(':categoryId?', CategoryController.listCategory)
-        .get(':categoryId/articles', CategoryController.redirectQuery)
-        .post(':categoryId', utils.checkSuperUser, CategoryController.postCategory)
+        .get('/:categoryId?', CategoryController.listCategory)
+        .get('/:categoryId/articles', CategoryController.redirectQuery)
+        .post('/:categoryId', utils.checkSuperUser, CategoryController.postCategory)
 }
