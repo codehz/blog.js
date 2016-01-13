@@ -34,12 +34,12 @@ module.exports = function (mongoose, express, app, db) {
     apiRoutes.use('/', UserController.setupPublic(express.Router));
     apiRoutes.use('/', FileController.setupPublic(express.Router))
     apiRoutes.use('/public', ArticleController.setupPublic(express.Router));
-    apiRoutes.use('/', CategoryController.setupPublic());
+    apiRoutes.use('/', CategoryController.setupPublic(express.Router));
 
     apiRoutes.use(utils.checkToken);
 
     apiRoutes.use('/', UserController.setup(express.Router))
     apiRoutes.use('/', ArticleController.setup(express.Router));
     apiRoutes.use('/', FileController.setup(express.Router, fileUpload));
-    apiRoutes.use('/', CategoryController.setup());
+    apiRoutes.use('/', CategoryController.setup(express.Router));
 }
