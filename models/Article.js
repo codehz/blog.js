@@ -17,6 +17,7 @@ module.exports = function (mongoose) {
             hide: { type: Boolean, default: true }
         }],
         draft: { type: Boolean, default: true },
+        category: {type:String, ref: 'Category'},
 
         permission: [{
             _id: { type: String, ref: 'Group' },

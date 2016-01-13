@@ -153,6 +153,7 @@ module.exports = function (mongoose, config, db) {
             if (req.query.title) query["title"] = req.query.title;
             if (req.query.user_id) query["user.id"] = req.query.user_id;
             if (req.query.keywords) query["keywords"] = { $in: req.query.keywords.split(',') }
+            if (req.query.category) query["category"] = { $in: req.query.category.split(',') }
             if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
             if (req.query.draft) query["draft"] = req.query.draft;
 

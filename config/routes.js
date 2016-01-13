@@ -1,15 +1,16 @@
 'use strict'
 
 module.exports = function (mongoose, express, app, db) {
-    const jwt = require('jsonwebtoken')
-        , multer = require('multer')
-        , utils = require('../lib/utils')()
-        , config = require('../config/config')
-        , UserController = require('../controllers/user')(mongoose, config, db)
-        , ArticleController = require('../controllers/article.js')(mongoose, config, db)
-        , FileController = require('../controllers/file.js')(mongoose, config, db)
-        , GroupController = require('../controllers/group.js')(mongoose, config, db)
-        , apiRoutes = express.Router();
+    const jwt = require('jsonwebtoken'),
+        multer = require('multer'),
+        utils = require('../lib/utils')(),
+        config = require('../config/config'),
+        UserController = require('../controllers/user')(mongoose, config, db),
+        ArticleController = require('../controllers/article.js')(mongoose, config, db),
+        CategoryController = require('../controllers/category.js')(mongoose, config, db),
+        FileController = require('../controllers/file.js')(mongoose, config, db),
+        GroupController = require('../controllers/group.js')(mongoose, config, db),
+        apiRoutes = express.Router();
     const fileUpload = multer({
         dest: '/tmp',
         limits: {
@@ -35,6 +36,7 @@ module.exports = function (mongoose, express, app, db) {
 
     apiRoutes.get('/public/article/:articleId', utils.requiredParams('articleId'), ArticleController.get);
     apiRoutes.get('/public/article', ArticleController.find);
+    apiRoutes.get('/public/category/:parent', CategoryController.listCategory);
     apiRoutes.get('/public/article/:articleId/comment/:commentId',
         utils.requiredParams('articleId'),
         utils.requiredParams('commentId'),
@@ -75,7 +77,9 @@ module.exports = function (mongoose, express, app, db) {
 
     apiRoutes.get('/article/:articleId', utils.requiredParams('articleId'), ArticleController.get);
     apiRoutes.get('/article', ArticleController.find);
-    apiRoutes.post('/article', utils.requiredBody('title'), utils.requiredBody('content'),
+    apiRoutes.post('/article', utils.requiredBody('title'),
+        utils.requiredBody('category'),
+        utils.requiredBody('content'),
         ArticleController._checkBlogPermission('create'),
         ArticleController.create);
     apiRoutes.delete('/article/:articleId', utils.requiredParams('articleId'),
