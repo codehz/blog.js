@@ -31,7 +31,7 @@ module.exports = function (mongoose, express, app, db) {
     apiRoutes.param('articleId', utils.requiredParams('articleId'));
     apiRoutes.param('commentId', utils.requiredParams('commentId'));
     apiRoutes.param('groupId', utils.requiredParams('groupId'));
-    apiRoutes.param('parent', utils.requiredParams('parent'));
+    apiRoutes.param('categoryId', utils.requiredParams('categoryId'));
 
     apiRoutes.post('/login', utils.requiredFields("email password"),
         utils.checkPassword, utils.validateEmail, UserController.login);
@@ -40,10 +40,11 @@ module.exports = function (mongoose, express, app, db) {
 
     apiRoutes.get('/file/:fileId', FileController.redirect);
 
-    apiRoutes.route('/public/article').get(ArticleController.find)
-        .route(':articleId').get(ArticleController.get)
-        .route('comment').get(ArticleController._getArticle, ArticleController.Comment.getAll)
-        .route(':commentId').get(ArticleController._getArticle, ArticleController.Comment.getSingle)
+    const public_article = apiRoutes.route('/public/article');
+    public_article.get(ArticleController.find);
+    public_article.route(':articleId').get(ArticleController.get);
+    public_article.route('comment').get(ArticleController._getArticle, ArticleController.Comment.getAll);
+    public_article.route(':commentId').get(ArticleController._getArticle, ArticleController.Comment.getSingle);
     apiRoutes.get('/public/category/:parent', CategoryController.listCategory);
 
     // Middleware to check user auth
@@ -76,38 +77,36 @@ module.exports = function (mongoose, express, app, db) {
 
     apiRoutes.get('/me', UserController.current);
 
-    apiRoutes.route('/article')
-        .get(ArticleController.find)
-        .route(':articleId')
-        .get(ArticleController.get)
-        .post(utils.requiredBody('title'),
-            utils.requiredBody('category'),
-            utils.requiredBody('content'),
-            ArticleController._checkBlogPermission('create'),
-            ArticleController.create)
-        .delete(ArticleController._getArticleAndCheckPermission('adminComment'),
-            ArticleController.delete)
-        .put(ArticleController._getArticleAndCheckPermission('update'),
-            ArticleController.update);
+    const article = apiRoutes.route('/article');
+    article.get(ArticleController.find)
+    const articleId = article.route(':articleId');
+    articleId.get(ArticleController.get);
+    articleId.use(utils.checkSuperUser);
+    articleId.post(utils.requiredFields('title category content'),
+        utils.checkSuperUser, ArticleController.create)
+        .delete(utils.checkSuperUser, ArticleController.delete)
+        .put(utils.checkSuperUser, ArticleController.update);
 
-    apiRoutes.route('/article/:articleId/comment')
-        .use(ArticleController._getArticle)
-        .get(ArticleController.Comment.getAll)
+    const comment = apiRoutes.route('/article/:articleId/comment')
+    comment.use(ArticleController._getArticle)
+    comment.get(ArticleController.Comment.getAll)
         .post(ArticleController._checkBlogPermission,
-            ArticleController.Comment.create)
-        .route(':commentId')
-        .use(ArticleController.Comment._getComment)
+            ArticleController.Comment.create);
+    const commentId = comment.route(':commentId');
+    commentId.use(ArticleController.Comment._getComment)
         .get(ArticleController.Comment.getSingle)
-        .use(ArticleController._checkBlogPermission)
+    commentId.use(ArticleController._checkBlogPermission)
         .post(ArticleController.Comment.create)
         .delete(ArticleController.Comment.delete)
         .put(ArticleController.Comment.changeHideState);
 
     apiRoutes.route('/file')
         .get(FileController.get)
-        .post(FileController._checkPermission, fileUpload.single('file'), FileController.upload)
-        .delete(':fileId', FileController._checkPermission, FileController.delete);
+        .post(utils.checkSuperUser, fileUpload.single('file'), FileController.upload)
+        .delete(':fileId', utils.checkSuperUser, FileController.delete);
 
     apiRoutes.route('/category')
-        .get(':parent?', CategoryController.listCategory)
+        .get(':categoryId?', CategoryController.listCategory)
+        .get(':categoryId/articles', CategoryController.redirectQuery)
+        .post(':categoryId', utils.checkSuperUser, CategoryController.postCategory)
 }

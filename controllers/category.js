@@ -15,8 +15,8 @@ module.exports = function (mongoose, config, db) {
         },
 
         listCategory(req, res) {
-            const parent = req.params.parent ? req.params.parent : { $exists: false };
-            db.find({ parent: parent }, (err, categories) => {
+            const categoryId = req.params.categoryId ? req.params.categoryId : { $exists: false };
+            db.find({ parent: categoryId }, (err, categories) => {
                 if (err) utils.error(res, 422, err.message);
                 utils.responseData(res, categories.count, categories);
             });
