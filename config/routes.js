@@ -42,9 +42,9 @@ module.exports = function (mongoose, express, app, db) {
 
     const public_article = apiRoutes.route('/public/article');
     public_article.get(ArticleController.find);
-    public_article.route(':articleId').get(ArticleController.get);
-    public_article.route('comment').get(ArticleController._getArticle, ArticleController.Comment.getAll);
-    public_article.route(':commentId').get(ArticleController._getArticle, ArticleController.Comment.getSingle);
+    public_article.get(':articleId', ArticleController.get);
+    public_article.get('comment', ArticleController._getArticle, ArticleController.Comment.getAll);
+    public_article.get(':commentId', ArticleController._getArticle, ArticleController.Comment.getSingle);
     apiRoutes.get('/public/category/:parent', CategoryController.listCategory);
 
     // Middleware to check user auth
@@ -79,7 +79,7 @@ module.exports = function (mongoose, express, app, db) {
 
     const article = apiRoutes.route('/article');
     article.get(ArticleController.find)
-    const articleId = article.route(':articleId');
+    const articleId = article.route('/article/:articleId');
     articleId.get(ArticleController.get);
     articleId.use(utils.checkSuperUser);
     articleId.post(utils.requiredFields('title category content'),
@@ -92,7 +92,7 @@ module.exports = function (mongoose, express, app, db) {
     comment.get(ArticleController.Comment.getAll)
         .post(ArticleController._checkBlogPermission,
             ArticleController.Comment.create);
-    const commentId = comment.route(':commentId');
+    const commentId = comment.route('/article/:articleId/comment/:commentId');
     commentId.use(ArticleController.Comment._getComment)
         .get(ArticleController.Comment.getSingle)
     commentId.use(ArticleController._checkBlogPermission)
