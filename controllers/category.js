@@ -4,16 +4,6 @@ module.exports = function (mongoose, config, db) {
     const utils = require('../lib/utils')();
 
     return {
-        postCategory(req, res) {
-            const name = req.body.name;
-            const newCategory = db.Category({
-                _id: name,
-            });
-            newCategory.save(err => err ?
-                utils.error(res, 422, err.message) :
-                utils.success(res, "post success!"));
-        },
-
         listCategory(req, res) {
             const categoryId = req.params.categoryId ? req.params.categoryId : { $exists: false };
             db.Category.find({ parent: categoryId }, (err, categories) => {
@@ -36,14 +26,5 @@ module.exports = function (mongoose, config, db) {
 
             return categoryRouter;
         },
-
-        setup(Router) {
-            const categoryRouter = new Router();
-            categoryRouter.param('categoryId', utils.requiredParams('categoryId'));
-
-            categoryRouter.post('/category/:categoryId', this.redirectQuery);
-
-            return categoryRouter;
-        }
     }
 }
