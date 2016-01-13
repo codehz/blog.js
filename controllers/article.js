@@ -134,6 +134,7 @@ module.exports = function (mongoose, config, db) {
 
         setupPublic(Router) {
             const articleRouter = new Router();
+
             articleRouter.param('articleId', utils.requiredParams('articleId'));
             articleRouter.param('commentId', utils.requiredParams('commentId'));
             articleRouter.use('/article/:articleId', this._getArticle);
@@ -143,16 +144,20 @@ module.exports = function (mongoose, config, db) {
             articleRouter.get('/article/:articleId', this.get);
             articleRouter.get('/article/:articleId/comment', this.Comment.getAll);
             articleRouter.get('/article/:articleId/comment/:commentId', this.Comment.getAll);
-            return articleRouter
+
+            return articleRouter;
         },
 
         setup(Router) {
             const articleRouter = this.setupPublic(Router);
+
             articleRouter.post('/article', utils.requiredFields('title category content'), utils.checkSuperUser, this.create);
             articleRouter.route('/article/:articleId').put(this.update).delete(utils.checkSuperUser, this.delete);
             articleRouter.route('/article/:articleId/comment').post(this.Comment.create);
             articleRouter.route('/article/:articleId/comment/:commentId')
                 .post(this.Comment.create).delete(this.Comment.delete).put(utils.checkSuperUser, this.Comment.changeHideState);
+
+            return articleRouter;
         },
         Comment: {
             _getComment(req, res, next) {

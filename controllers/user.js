@@ -165,18 +165,24 @@ module.exports = function (mongoose, config, db) {
         },
         setupPublic(Router) {
             const userRouter = new Router();
+
             userRouter.post('/login', utils.requiredFields("email password"),
                 utils.checkPassword, utils.validateEmail, this.login);
             userRouter.post('/register', utils.requiredFields("name password email phone"),
                 utils.checkPassword, utils.validateEmail, utils.validatePhone, this.register);
+
+            return userRouter;
         },
         setup(Router) {
             const userRouter = new Router();
+
             userRouter.param('userId', utils.requiredParams('userId'));
             userRouter.get('/me', this.current);
             userRouter.put('/me', this.updateCurrent);
             userRouter.use(utils.checkSuperUser);
             userRouter.get('/user/:userId?', this.getUser);
+
+            return userRouter;
         }
     }
 }

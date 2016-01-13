@@ -33,16 +33,16 @@ module.exports = function (mongoose, config, db) {
 
             categoryRouter.get('/category/:categoryId?', this.listCategory);
             categoryRouter.get('/category/:categoryId/articles', this.redirectQuery);
-            
+
             return categoryRouter;
         },
-        
+
         setup(Router) {
             const categoryRouter = new Router();
             categoryRouter.param('categoryId', utils.requiredParams('categoryId'));
-            
+
             categoryRouter.post('/category/:categoryId', this.redirectQuery);
-            
+
             return categoryRouter;
         }
     }

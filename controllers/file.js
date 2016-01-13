@@ -111,13 +111,17 @@ module.exports = function (mongoose, config, db) {
         },
         setupPublic(Router) {
             const fileRouter = new Router();
+            
             fileRouter.get('/redirect/:fileId', this.redirect);
+            
             return fileRouter;
         },
         setup(Router, fileUpload) {
             const fileRouter = new Router();
+            
             fileRouter.route('/file').get(this.find).post(utils.checkSuperUser, fileUpload.single('file'), this.upload);
             fileRouter.route('/file/:fileId').get(this.get).delete(utils.checkSuperUser, this.delete);
+            
             return fileRouter;
         }
     }
