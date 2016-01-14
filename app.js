@@ -15,8 +15,8 @@ const express = require('express'),
 mongoose.connect(config.db);
 
 // use body parser as middleware
+app.use(bodyParser.json({limit: '1mb'}));
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 app.use(validator({
     errorFormatter: function (param, msg, value) {
         const namespace = param.split('.')

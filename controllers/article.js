@@ -59,14 +59,14 @@ module.exports = function (mongoose, config, db) {
         create(req, res) {
             db.Sequence.getNextSequence("articles", (err, nextArticleId) => {
                 if (err) return utils.error(res, 422, err);
-                const keyword = req.body.data.keyword || req.body.data.title;
+                const keyword = req.body.keyword || req.body.title;
                 const article = db.Article({
                     id: nextArticleId,
-                    title: req.body.data.title,
+                    title: req.body.title,
                     user: req.user,
-                    content: req.body.data.content,
+                    content: req.body.content,
                     keywords: keyword.split(','),
-                    draft: req.body.data.draft ? req.body.data.draft : false
+                    draft: req.body.draft ? req.body.draft : false
                 });
                 db.Category.setCategory(req.body.category, article, () => article.save(err => err ?
                     db.Sequence.SequenceRollback("articles", utils.error(res, 422, err.message)) :
@@ -81,10 +81,10 @@ module.exports = function (mongoose, config, db) {
         update(req, res) {
             if (!req.user.isSuperUser() && req.article.user.id != req.user.id) return utils.error(res, 403);
 
-            if (req.body.data.title) req.article.title = req.body.data.title;
-            if (req.body.data.content) req.article.price = req.body.data.content;
-            if (req.body.data.keywords) req.article.keywords = req.body.data.keywords.split(',');
-            if (req.body.data.draft) req.article.draft = req.body.data.draft;
+            if (req.body.title) req.article.title = req.body.title;
+            if (req.body.content) req.article.price = req.body.content;
+            if (req.body.keywords) req.article.keywords = req.body.keywords.split(',');
+            if (req.body.draft) req.article.draft = req.body.draft;
 
             req.article.save((err, article) => err ? utils.error(res, 422, err.message)
                 : utils.success(res, articleResponse(article)));
@@ -193,7 +193,7 @@ module.exports = function (mongoose, config, db) {
                     return utils.error(res, 404);
                 req.article.comments.push({
                     user: req.user,
-                    content: req.body.data.content,
+                    content: req.body.content,
                     ref_id: req.comment ? req.comment.id : undefined
                 });
                 req.article.save(err => err ? utils.error(res, 422, err.message)

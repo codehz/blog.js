@@ -23,33 +23,32 @@ module.exports = function (mongoose, config, db) {
             utils.success(res, userResponse(req.user));
         },
         updateCurrent(req, res) {
-            if (!req.body.data) return utils.error(res, 400);
             let user = req.user;
 
-            if (req.body.data.name) {
+            if (req.body.name) {
                 req.checkBody('name').isAlpha();
-                user.name = req.body.data.name;
+                user.name = req.body.name;
             }
-            if (req.body.data.email) {
+            if (req.body.email) {
                 req.checkBody('email').isEmail();
-                user.email = req.body.data.email;
+                user.email = req.body.email;
             }
-            if (req.body.data.phone) {
+            if (req.body.phone) {
                 req.checkBody('phone').isMobilePhone('zh-CN');
-                user.phone = req.body.data.phone;
+                user.phone = req.body.phone;
             }
             let error;
             if (error = req.validationErrors()) {
                 return utils.validationError(res, error);
             }
-            if (req.body.data.current_password) {
+            if (req.body.current_password) {
                 // Check if current password right
-                user.comparePassword(req.body.data.current_password, function (err, valid) {
+                user.comparePassword(req.body.current_password, function (err, valid) {
                     if (!valid) return utils.error(res, 422, "Wrong current password", "current_password");
-                    if (!req.body.data.new_password) {
+                    if (!req.body.new_password) {
                         return utils.error(res, 422, "Wrong new password", "new_password");
                     } else {
-                        user.password = req.body.data.new_password;
+                        user.password = req.body.new_password;
                     }
                     saveUser(user, res);
                 });
@@ -72,7 +71,7 @@ module.exports = function (mongoose, config, db) {
             }
 
             db.User.findOne({
-                email: req.body.data.email
+                email: req.body.email
             }, function (err, user) {
                 if (err) throw err;
 
@@ -80,7 +79,7 @@ module.exports = function (mongoose, config, db) {
                     return utils.error(res, 422, "Wrong email", "email");
                 } else {
                     // Check if password matches
-                    user.comparePassword(req.body.data.password, function (err, valid) {
+                    user.comparePassword(req.body.password, function (err, valid) {
                         // If user is found and password is right - create token
                         if (!valid) return utils.error(res, 422, "Wrong password", "password");
                         let fakeUser = { id: user.id, _id: user._id };
@@ -109,10 +108,10 @@ module.exports = function (mongoose, config, db) {
 
                 var newUser = db.User({
                     id: nextUserId,
-                    phone: req.body.data.phone,
-                    name: req.body.data.name,
-                    password: req.body.data.password,
-                    email: req.body.data.email,
+                    phone: req.body.phone,
+                    name: req.body.name,
+                    password: req.body.password,
+                    email: req.body.email,
                     blog: {
                         default_permission: [{
                             _id: 'default',
