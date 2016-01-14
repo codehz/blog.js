@@ -41,4 +41,5 @@ module.exports = function (mongoose, express, app, db) {
     apiRoutes.use('/', UserController.setup(express.Router))
     apiRoutes.use('/', ArticleController.setup(express.Router));
     apiRoutes.use('/', FileController.setup(express.Router, fileUpload));
+    
 }
