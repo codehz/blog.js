@@ -43,7 +43,7 @@ fs.readdirSync(modelsPath).forEach(file => {
 });
 
 // Use morgan to log requests to the console
-app.use(morgan(":status\t:response-time\t:res[content-length]\t:method\t:url"));
+app.use(require('./config/logger')(morgan));
 
 require('./config/routes')(mongoose, express, app, db);
 
