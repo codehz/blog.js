@@ -64,7 +64,6 @@ module.exports = function (mongoose, config, db) {
             }
         },
         login(req, res) {
-            if (!req.body.data) return utils.error(res, 400);
             req.checkBody('email').notEmpty().isEmail();
             req.checkBody('password').notEmpty();
             let error;
@@ -106,7 +105,6 @@ module.exports = function (mongoose, config, db) {
 
             // Need to retrieve a new user id
             db.Sequence.getNextSequence("users", function (err, nextUserId) {
-                if (!req.body.data) return utils.error(res, 400);
                 if (err) return utils.error(res, 422, err);
 
                 var newUser = db.User({

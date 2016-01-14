@@ -57,7 +57,6 @@ module.exports = function (mongoose, config, db) {
         },
 
         create(req, res) {
-            if (!req.body.data) return utils.error(res, 400);
             db.Sequence.getNextSequence("articles", (err, nextArticleId) => {
                 if (err) return utils.error(res, 422, err);
                 const keyword = req.body.data.keyword || req.body.data.title;
