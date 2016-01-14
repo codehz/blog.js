@@ -12,10 +12,9 @@ module.exports = function (mongoose, config, db) {
     return {
         listCategory(req, res) {
             const categoryId = req.params.categoryId ? req.params.categoryId : { $exists: false };
-            console.log(categoryId);
             db.Category.find({ parent: categoryId }, (err, categories) => {
                 if (err) utils.error(res, 422, err.message);
-                utils.responseData(res, categories.count, categories);
+                utils.responseData(res, categories.count, categeryResponse(categories));
             });
         },
 
