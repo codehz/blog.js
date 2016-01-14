@@ -42,10 +42,11 @@ fs.readdirSync(modelsPath).forEach(file => {
         db[file.replace('.js', '')] = require(modelsPath + '/' + file)(mongoose)
 });
 
+// Use morgan to log requests to the console
+app.use(morgan('combined'));
+
 require('./config/routes')(mongoose, express, app, db);
 
-// Use morgan to log requests to the console
-app.use(morgan('dev'));
 app.use(config.uploadDir, express.static(config.uploadPath));
 app.use('/', express.static(config.publicPath));    
 //app.use(jadeStatic({ baseDir: config.publicPath, baseUrl: '/', jade: { pretty: true } }));
