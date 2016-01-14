@@ -2,6 +2,12 @@
 
 module.exports = function (mongoose, config, db) {
     const utils = require('../lib/utils')();
+    
+    function categeryResponse(category) {
+        return {
+            name: category._id,
+        };
+    }
 
     return {
         listCategory(req, res) {
