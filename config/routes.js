@@ -19,13 +19,12 @@ module.exports = function (mongoose, express, app, db) {
         }
     });
 
-    app.use('/api', apiRoutes);
     app.use((req, res, next) => {
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
         res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,Authorization');
         next();
     });
+    app.use('/api', apiRoutes);
 
     apiRoutes.param('fileId', utils.requiredParams('fileId'));
     apiRoutes.param('groupId', utils.requiredParams('groupId'));
