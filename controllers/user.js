@@ -23,32 +23,33 @@ module.exports = function (mongoose, config, db) {
             utils.success(res, userResponse(req.user));
         },
         updateCurrent(req, res) {
+            if (!req.body.data) return utils.error(res, 400);
             let user = req.user;
 
-            if (req.body.name) {
+            if (req.body.data.name) {
                 req.checkBody('name').isAlpha();
-                user.name = req.body.name;
+                user.name = req.body.data.name;
             }
-            if (req.body.email) {
+            if (req.body.data.email) {
                 req.checkBody('email').isEmail();
-                user.email = req.body.email;
+                user.email = req.body.data.email;
             }
-            if (req.body.phone) {
+            if (req.body.data.phone) {
                 req.checkBody('phone').isMobilePhone('zh-CN');
-                user.phone = req.body.phone;
+                user.phone = req.body.data.phone;
             }
             let error;
             if (error = req.validationErrors()) {
                 return utils.validationError(res, error);
             }
-            if (req.body.current_password) {
+            if (req.body.data.current_password) {
                 // Check if current password right
-                user.comparePassword(req.body.current_password, function (err, valid) {
+                user.comparePassword(req.body.data.current_password, function (err, valid) {
                     if (!valid) return utils.error(res, 422, "Wrong current password", "current_password");
-                    if (!req.body.new_password) {
+                    if (!req.body.data.new_password) {
                         return utils.error(res, 422, "Wrong new password", "new_password");
                     } else {
-                        user.password = req.body.new_password;
+                        user.password = req.body.data.new_password;
                     }
                     saveUser(user, res);
                 });
@@ -63,6 +64,7 @@ module.exports = function (mongoose, config, db) {
             }
         },
         login(req, res) {
+            if (!req.body.data) return utils.error(res, 400);
             req.checkBody('email').notEmpty().isEmail();
             req.checkBody('password').notEmpty();
             let error;
@@ -71,7 +73,7 @@ module.exports = function (mongoose, config, db) {
             }
 
             db.User.findOne({
-                email: req.body.email
+                email: req.body.data.email
             }, function (err, user) {
                 if (err) throw err;
 
@@ -79,7 +81,7 @@ module.exports = function (mongoose, config, db) {
                     return utils.error(res, 422, "Wrong email", "email");
                 } else {
                     // Check if password matches
-                    user.comparePassword(req.body.password, function (err, valid) {
+                    user.comparePassword(req.body.data.password, function (err, valid) {
                         // If user is found and password is right - create token
                         if (!valid) return utils.error(res, 422, "Wrong password", "password");
                         let fakeUser = { id: user.id, _id: user._id };
@@ -104,14 +106,15 @@ module.exports = function (mongoose, config, db) {
 
             // Need to retrieve a new user id
             db.Sequence.getNextSequence("users", function (err, nextUserId) {
+                if (!req.body.data) return utils.error(res, 400);
                 if (err) return utils.error(res, 422, err);
 
                 var newUser = db.User({
                     id: nextUserId,
-                    phone: req.body.phone,
-                    name: req.body.name,
-                    password: req.body.password,
-                    email: req.body.email,
+                    phone: req.body.data.phone,
+                    name: req.body.data.name,
+                    password: req.body.data.password,
+                    email: req.body.data.email,
                     blog: {
                         default_permission: [{
                             _id: 'default',
