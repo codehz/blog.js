@@ -18,12 +18,12 @@ module.exports = function (mongoose, config, db) {
             next();
         },
 
-        setupPublic(Router) {
+        setupPublic(Router, ArticleController) {
             const categoryRouter = new Router();
             categoryRouter.param('categoryId', utils.requiredParams('categoryId'));
 
             categoryRouter.get('/category/:categoryId?', this.listCategory);
-            categoryRouter.get('/category/:categoryId/articles', this.redirectQuery);
+            categoryRouter.get('/category/:categoryId/articles', this.redirectQuery, ArticleController.find);
 
             return categoryRouter;
         },

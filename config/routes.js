@@ -34,7 +34,7 @@ module.exports = function (mongoose, express, app, db) {
     apiRoutes.use('/', UserController.setupPublic(express.Router));
     apiRoutes.use('/', FileController.setupPublic(express.Router))
     apiRoutes.use('/public', ArticleController.setupPublic(express.Router));
-    apiRoutes.use('/', CategoryController.setupPublic(express.Router));
+    apiRoutes.use('/', CategoryController.setupPublic(express.Router, ArticleController));
 
     apiRoutes.use(utils.genCheckToken(jwt, app, UserController));
 
