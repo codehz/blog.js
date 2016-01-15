@@ -60,14 +60,12 @@ module.exports = function (mongoose, config, db) {
         create(req, res) {
             db.Sequence.getNextSequence("articles", (err, nextArticleId) => {
                 if (err) return utils.error(res, 422, err);
-                const keywords = req.body.keywords || req.body.title;
-                let parsedArray = [];
+                let keywords = req.body.keywords || req.body.title;
                 try {
-                    parsedArray = JSON.parse(keywords);
-                    if (parsedArray && parsedArray.count) parsedArray = Array.from(parsedArray);
-                    else parsedArray = undefined;
+                    if (keywords && keywords.count) keywords = Array.from(keywords);
+                    else keywords = undefined;
                 } catch (e) {
-                    parsedArray = undefined;
+                    keywords = undefined;
                 }
                 const article = db.Article({
                     id: nextArticleId,
