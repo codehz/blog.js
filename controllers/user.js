@@ -20,7 +20,7 @@ module.exports = function (mongoose, config, db) {
             });
         },
         current(req, res) {
-            utils.success(res, userResponse(req.user));
+            utils.responseData(res, req.user.name, userResponse(req.user));
         },
         updateCurrent(req, res) {
             let user = req.user;
