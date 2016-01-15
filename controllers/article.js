@@ -61,7 +61,7 @@ module.exports = function (mongoose, config, db) {
             db.Sequence.getNextSequence("articles", (err, nextArticleId) => {
                 if (err) return utils.error(res, 422, err);
                 let keywords = req.body.keywords || req.body.title;
-                if (!keywords || !keywords.count) keywords = undefined;
+                if (!keywords || !keywords.length) keywords = undefined;
                 console.log(keywords);
                 const article = db.Article({
                     id: nextArticleId,
