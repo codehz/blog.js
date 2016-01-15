@@ -72,7 +72,7 @@ module.exports = function (mongoose, config, db) {
                     title: req.body.title,
                     user: req.user,
                     content: req.body.content,
-                    keywords: parsedArray,
+                    keywords: keywords,
                     draft: req.body.draft ? req.body.draft : false
                 });
                 db.Category.setCategory(req.body.category, article, () => article.save(err => err ?
