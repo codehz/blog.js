@@ -60,13 +60,13 @@ module.exports = function (mongoose, config, db) {
         create(req, res) {
             db.Sequence.getNextSequence("articles", (err, nextArticleId) => {
                 if (err) return utils.error(res, 422, err);
-                const keyword = req.body.keyword || req.body.title;
+                const keywords = req.body.keywords || req.body.title;
                 const article = db.Article({
                     id: nextArticleId,
                     title: req.body.title,
                     user: req.user,
                     content: req.body.content,
-                    keywords: keyword.split(','),
+                    keywords: keywords.split(' '),
                     draft: req.body.draft ? req.body.draft : false
                 });
                 db.Category.setCategory(req.body.category, article, () => article.save(err => err ?
