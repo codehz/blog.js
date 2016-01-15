@@ -61,12 +61,20 @@ module.exports = function (mongoose, config, db) {
             db.Sequence.getNextSequence("articles", (err, nextArticleId) => {
                 if (err) return utils.error(res, 422, err);
                 const keywords = req.body.keywords || req.body.title;
+                let parsedArray = [];
+                try {
+                    parsedArray = JSON.parse(keywords);
+                    if (parsedArray && parsedArray.count) parsedArray = Array.from(parsedArray);
+                    else parsedArray = undefined;
+                } catch (e) {
+                    parsedArray = undefined;
+                }
                 const article = db.Article({
                     id: nextArticleId,
                     title: req.body.title,
                     user: req.user,
                     content: req.body.content,
-                    keywords: keywords.split(' '),
+                    keywords: parsedArray,
                     draft: req.body.draft ? req.body.draft : false
                 });
                 db.Category.setCategory(req.body.category, article, () => article.save(err => err ?
