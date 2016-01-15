@@ -86,7 +86,7 @@ module.exports = function (mongoose, config, db) {
                         let token = jwt.sign(fakeUser, config.secret, {
                             expiresIn: 3600 * 24 // 24 hours
                         });
-                        utils.success(res, { token });
+                        utils.responseData(res, user.name, { token });
                     });
                 }
 
@@ -129,7 +129,7 @@ module.exports = function (mongoose, config, db) {
                         expiresIn: 3600 * 24// expires in 24 hours
                     });
 
-                    return utils.success(res, { token });
+                    return utils.responseData(res, user.name, { token });
                 });
             });
         },
