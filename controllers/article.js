@@ -198,7 +198,7 @@ module.exports = function (mongoose, config, db) {
                     user: req.user,
                     content: req.body.content,
                     ref_id: req.params.commentId ? req.params.commentId : undefined,
-                    hide: req.user.isSuperUser()
+                    hide: !req.user.isSuperUser()
                 });
                 req.article.save(err => err ? utils.error(res, 422, err.message)
                     : utils.responseData(res, "post successful"));
