@@ -8,7 +8,7 @@ module.exports = function (mongoose, config, db) {
             phone: user.phone,
             name: user.name,
             email: user.email,
-            superuser: user.isSuperUSer()
+            superuser: user.isSuperUser()
         };
     }
 
