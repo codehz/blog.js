@@ -130,7 +130,7 @@ module.exports = function (mongoose, config, db) {
                         expiresIn: 3600 * 24// expires in 24 hours
                     });
 
-                    return utils.responseData(res, user.name, { token });
+                    return utils.responseData(res, fakeUser.name, { token });
                 });
             });
         },
