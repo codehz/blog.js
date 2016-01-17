@@ -6,3 +6,4 @@ request/
 uploads/
 public/*
 *.log
+*.zip
