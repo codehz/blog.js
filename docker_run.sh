@@ -1,5 +1,8 @@
 #!/bin/sh
 
+echo '$USER:$PASSWORD' | sudo chpasswd
+sudo service mongod start
+
 if [ ! -d "/app_link/coped"]
     if [ ! -d "/app_link/public" ]; then
         mv /app/public /app_link
