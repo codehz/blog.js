@@ -6,6 +6,7 @@ if [ ! -d "/app_link/coped"]
     else
         rm -rf /app/public
     fi
+    touch /app_link/coped
 fi
 
 ln -s /app_link/public .
