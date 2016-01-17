@@ -1,6 +1,5 @@
 #!/bin/sh
 
-echo '$USER:$PASSWORD' | sudo chpasswd
 sudo service mongod start
 
 if [ ! -d "/app_link/coped"]

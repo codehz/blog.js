@@ -28,23 +28,15 @@ RUN apt-get install -y \
     libpango1.0-dev \
     g++ \
     software-properties-common \
-    openssh-server \
     sudo \
     mongodb-org
 
-# OpenSSH
-RUN mkdir /var/run/sshd
-RUN sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
-
-# SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 
 # Add user
 RUN useradd -ms /bin/bash $USER
 RUN adduser $USER sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-RUN echo '$USER:$USER' | chpasswd
 USER $USER
 WORKDIR /home/$USER
 
@@ -60,8 +52,8 @@ RUN mkdir -p ~/www/logs
 USER root
 
 # Setup Supervisord
-RUN echo "[program:ssh]" >> /etc/supervisor/conf.d/main.conf
-RUN echo "command=/usr/sbin/sshd -D" >> /etc/supervisor/conf.d/main.conf
+RUN echo "[program:mongod]" >> /etc/supervisor/conf.d/main.conf
+RUN echo "command=/usr/bin/mongod" >> /etc/supervisor/conf.d/main.conf
 RUN echo "[group:app]" >> /etc/supervisor/conf.d/main.conf
 RUN echo "programs=front" >> /etc/supervisor/conf.d/main.conf
 RUN echo "[program:front]" >> /etc/supervisor/conf.d/app.conf
@@ -91,6 +83,5 @@ VOLUME /app_link
 RUN /app/docker_install.sh
 
 EXPOSE 80
-EXPOSE 22
 
 CMD ["/bin/sh", "-c", "docker_run.sh"]
