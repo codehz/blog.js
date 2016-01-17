@@ -8,18 +8,31 @@ module.exports = function (mongoose) {
     });
 
     categoryScheme.statics.setCategory = (name, target, next) => {
-        mongoose.model('Category').findOne({ _id: name }, (err, category) => {
+        mongoose.model('Category').findById(name, (err, category) => {
             if (err) throw err;
             if (!category) {
                 mongoose.model('Category')({ _id: name }).save((err, category) => {
                     target.category = category;
                     next();
-                })
+                });
             } else {
                 target.category = category;
                 next();
             }
-        })
+        });
+    }
+
+    categoryScheme.statics.tryToRemoveCategory = (name) => {
+        mongoose.model('Category').findById(name, (err, category) => {
+            if (err) throw err;
+            if (category) {
+                mongoose.model('Article').find({ category: name }, (err, articles) => {
+                    if (articles.length == 0) {
+                        category.remove();
+                    }
+                });
+            }
+        });
     }
     return mongoose.model('Category', categoryScheme);
 }

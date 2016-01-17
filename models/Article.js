@@ -17,11 +17,18 @@ module.exports = function (mongoose) {
             hide: { type: Boolean, default: true }
         }],
         draft: { type: Boolean, default: true },
-        category: {type:String, ref: 'Category'},
+        category: { type: String, ref: 'Category' },
     });
 
     articleScheme.index({ created_at: -1 });
     articleScheme.index({ user_id: 1 });
+
+    articleScheme.pre('save', function (next) {
+        for (let comment of this.comments) {
+            if (comment.ref_id && !this.comments.id(comment.ref_id)) comment.remove();
+        }
+        next();
+    })
 
     return mongoose.model('Article', articleScheme);
 }

@@ -78,19 +78,29 @@ module.exports = function (mongoose, config, db) {
         },
         delete(req, res) {
             if (!req.user.isSuperUser() && req.article.user.id != req.user.id) return utils.error(res, 403);
-            req.article.remove(err => err ? utils.error(res, 422)
-                : utils.success(res, "delete successful"));
+            req.article.remove(err => {
+                if (err) return utils.error(res, 422);
+                db.Category.tryToRemoveCategory(req.article.category);
+                utils.success(res, "delete successful");
+            })
         },
         update(req, res) {
             if (!req.user.isSuperUser() && req.article.user.id != req.user.id) return utils.error(res, 403);
 
             if (req.body.title) req.article.title = req.body.title;
-            if (req.body.content) req.article.price = req.body.content;
-            if (req.body.keywords) req.article.keywords = req.body.keywords.split(',');
+            if (req.body.content) req.article.content = req.body.content;
+            if (req.body.keywords) req.article.keywords = req.body.keywords;
             if (req.body.draft) req.article.draft = req.body.draft;
+            if (req.body.category && req.article.category != req.body.category) {
+                req.article.category = req.body.category;
+            }
 
-            req.article.save((err, article) => err ? utils.error(res, 422, err.message)
-                : utils.success(res, articleResponse(article)));
+            req.article.save((err, article) => {
+                if (err) return utils.error(res, 422, err.message);
+                if (req.body.category && req.article.category != req.body.category)
+                    db.Category.tryToRemoveCategory(req.article.category);
+                utils.success(res, articleResponse(article));
+            });
         },
         get(req, res) {
             const id = req.params.articleId;
@@ -141,24 +151,39 @@ module.exports = function (mongoose, config, db) {
             articleRouter.param('articleId', utils.requiredParams('articleId'));
             articleRouter.param('commentId', utils.requiredParams('commentId'));
             articleRouter.use('/article/:articleId', this._getArticle);
-            articleRouter.use('/article/:articleId/comment/:commentId', this._getArticle);
+            articleRouter.use('/article/:articleId/comment/:commentId', this.Comment._getComment);
 
             articleRouter.get('/article', this.find);
             articleRouter.get('/article/:articleId', this.get);
             articleRouter.get('/article/:articleId/comment', this.Comment.getAll);
-            articleRouter.get('/article/:articleId/comment/:commentId', this.Comment.getAll);
+            articleRouter.get('/article/:articleId/comment/:commentId', this.Comment.getSingle);
 
             return articleRouter;
         },
 
         setup(Router) {
-            const articleRouter = this.setupPublic(Router);
+            const articleRouter = new Router();
 
-            articleRouter.post('/article', utils.requiredFields('title category content'), utils.checkSuperUser, this.create);
-            articleRouter.route('/article/:articleId').put(this.update).delete(utils.checkSuperUser, this.delete);
-            articleRouter.route('/article/:articleId/comment').post(this.Comment.create);
+            articleRouter.param('articleId', utils.requiredParams('articleId'));
+            articleRouter.param('commentId', utils.requiredParams('commentId'));
+            articleRouter.use('/article/:articleId', this._getArticle);
+            articleRouter.use('/article/:articleId/comment/:commentId', this.Comment._getComment);
+
+            articleRouter.route('/article')
+                .get(this.find)
+                .post(utils.requiredFields('title category content'), utils.checkSuperUser, this.create);
+            articleRouter.route('/article/:articleId')
+                .get(this.get)
+                .put(this.update)
+                .delete(utils.checkSuperUser, this.delete);
+            articleRouter.route('/article/:articleId/comment')
+                .get(this.Comment.getAll)
+                .post(this.Comment.create);
             articleRouter.route('/article/:articleId/comment/:commentId')
-                .post(this.Comment.create).delete(this.Comment.delete).put(utils.checkSuperUser, this.Comment.changeHideState);
+                .get(this.Comment.getSingle)
+                .post(this.Comment.create)
+                .delete(this.Comment.delete)
+                .put(utils.checkSuperUser, this.Comment.changeHideState);
 
             return articleRouter;
         },
@@ -207,11 +232,18 @@ module.exports = function (mongoose, config, db) {
             changeHideState(req, res) {
                 if (!req.user.isSuperUser() && (!req.user || req.article.user.id != req.user.id))
                     return utils.error(res, 404); // Pretend it does not exist
-                req.comment.hide = !!req.params.hide;
-                req.comment.save();
+                db.Article.update({_id: req.article._id, 'comments._id': req.comment.id}, {'$set': {
+                    'comments.$.hide': !!req.body.hide
+                }}, err => err ? utils.error(res, 422, err.message)
+                    : utils.success(res, "put successful"));
             },
 
             delete(req, res) {
+                if (!req.user.isSuperUser()
+                    && req.comment.hide
+                    && (!req.user || req.article.user.id != req.user.id) // Logged, but not blogger
+                    && req.comment.user.id != req.user.id) // Nor is commentator
+                    return utils.error(res, 404);
                 req.comment.remove();
                 req.article.save(err => err ? utils.error(res, 422, err.message)
                     : utils.responseData(res, "delete successful"));

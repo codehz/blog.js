@@ -18,7 +18,7 @@ const configs = {
         app: {
             name: 'blogjs'
         },
-        port: 8080,
+        port: 8000,
         db: dbBase + 'master-dev',
         secret,
         uploadDir,

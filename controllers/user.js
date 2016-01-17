@@ -72,7 +72,7 @@ module.exports = function (mongoose, config, db) {
             }
 
             db.User.findOne({
-                email: req.body.email
+                email: req.body.email.toLowerCase()
             }, function (err, user) {
                 if (err) throw err;
 
@@ -180,8 +180,7 @@ module.exports = function (mongoose, config, db) {
             userRouter.param('userId', utils.requiredParams('userId'));
             userRouter.get('/me', this.current);
             userRouter.put('/me', this.updateCurrent);
-            userRouter.use(utils.checkSuperUser);
-            userRouter.get('/user/:userId?', this.getUser);
+            userRouter.get('/user/:userId?', utils.checkSuperUser, this.getUser);
 
             return userRouter;
         }

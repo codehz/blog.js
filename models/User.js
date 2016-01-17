@@ -7,7 +7,14 @@ module.exports = function (mongoose) {
         name: { type: String, required: true },
         password: { type: String, required: true },
         phone: String,
-        email: { type: String, required: true, index: { unique: true } },
+        email: {
+            type: String,
+            pattern: /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i,
+            lowercase: true,
+            trim: true,
+            required: true,
+            index: { unique: true }
+        },
     });
 
     userSchema.pre('save', function (next) {
