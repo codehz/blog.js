@@ -8,6 +8,7 @@ module.exports = function (mongoose) {
         title: { type: String, required: true },
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         keywords: [String],
+        preview: String,
         content: String,
         comments: [{
             user: { type: Schema.Types.ObjectId, ref: 'User', required: true },

@@ -3,7 +3,7 @@
 module.exports = function (mongoose, config, db) {
     const utils = require('../lib/utils')();
 
-    function articleResponse(article, owner) {
+    function articleResponse(article, owner, list) {
         const user = article.user;
         return {
             id: article.id,
@@ -16,7 +16,8 @@ module.exports = function (mongoose, config, db) {
                 email: user.email
             },
             keywords: article.keywords,
-            content: article.content,
+            preview: article.preview,
+            content: list ? undefined : article.content,
             draft: article.draft,
             category: article.category
         }
@@ -67,6 +68,7 @@ module.exports = function (mongoose, config, db) {
                     id: nextArticleId,
                     title: req.body.title,
                     user: req.user,
+                    preview: req.body.preview,
                     content: req.body.content,
                     keywords: keywords,
                     draft: req.body.draft ? req.body.draft : false
@@ -88,6 +90,7 @@ module.exports = function (mongoose, config, db) {
             if (!req.user.isSuperUser() && req.article.user.id != req.user.id) return utils.error(res, 403);
 
             if (req.body.title) req.article.title = req.body.title;
+            if (req.body.preview) req.article.preview = req.body.preview;
             if (req.body.content) req.article.content = req.body.content;
             if (req.body.keywords) req.article.keywords = req.body.keywords;
             if (req.body.draft) req.article.draft = req.body.draft;
@@ -140,7 +143,7 @@ module.exports = function (mongoose, config, db) {
                 let ret = dbResponse
                     .filter(article => !article.draft || (req.user && (req.user.isSuperUser() || req.user.id == article.user.id)))
                     .map(article =>
-                        articleResponse(article, req.user && (req.user.isSuperUser() || req.user.id == article.user.id)));
+                        articleResponse(article, req.user && (req.user.isSuperUser() || req.user.id == article.user.id), true));
                 utils.responseData(res, ret.count, ret);
             })
         },
