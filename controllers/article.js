@@ -1,5 +1,7 @@
 'use strict'
 
+const async = require('async');
+
 module.exports = function (mongoose, config, db) {
     const utils = require('../lib/utils')();
 
@@ -39,6 +41,23 @@ module.exports = function (mongoose, config, db) {
         }
     }
 
+    function keywords(req, res, is_public) {
+        let query = {};
+        if (is_public || !req.user.isSuperUser()) {
+            query = { draft: false };
+        }
+        db.Article.find(query).select('keywords').exec((err, dbResponse) => {
+            if (err) return utils.error(res, 422, err.message);
+            let map = {};
+            async.each(dbResponse, (article, cb_master) => {
+                async.each(article.keywords, (value, cb) => {
+                    map[value] = (map[value] ? map[value] : 0) + 1;
+                    cb();
+                }, cb_master);
+            }, err => err ? utils.error(res, 422, err.message) : utils.responseData(res, map.count, map));
+        })
+    }
+
     return {
         _checkBlogPermission() {
             return (req, res, next) => {
@@ -71,40 +90,49 @@ module.exports = function (mongoose, config, db) {
                     preview: req.body.preview,
                     content: req.body.content,
                     keywords: keywords,
-                    draft: req.body.draft ? req.body.draft : false
+                    draft: !!req.body.draft
                 });
                 db.Category.setCategory(req.body.category, article, () => article.save(err => err ?
                     db.Sequence.SequenceRollback("articles", utils.error(res, 422, err.message)) :
-                    utils.success(res, "update success!")));
+                    utils.success(res, "create success!")));
             })
         },
+
         delete(req, res) {
             if (!req.user.isSuperUser() && req.article.user.id != req.user.id) return utils.error(res, 403);
             req.article.remove(err => {
                 if (err) return utils.error(res, 422);
                 db.Category.tryToRemoveCategory(req.article.category);
-                utils.success(res, "delete successful");
+                utils.success(res, "delete successful!");
             })
         },
+
         update(req, res) {
             if (!req.user.isSuperUser() && req.article.user.id != req.user.id) return utils.error(res, 403);
 
-            if (req.body.title) req.article.title = req.body.title;
-            if (req.body.preview) req.article.preview = req.body.preview;
-            if (req.body.content) req.article.content = req.body.content;
-            if (req.body.keywords) req.article.keywords = req.body.keywords;
-            if (req.body.draft) req.article.draft = req.body.draft;
-            if (req.body.category && req.article.category != req.body.category) {
+            let old_category = req.article.category;
+
+            if (typeof req.body.title == 'string') req.article.title = req.body.title;
+            if (typeof req.body.preview == 'string') req.article.preview = req.body.preview;
+            if (typeof req.body.content == 'string') req.article.content = req.body.content;
+            if (req.body.keywords instanceof Array) req.article.keywords = req.body.keywords;
+            if (typeof req.body.draft == 'boolean') req.article.draft = !!req.body.draft;
+            if (typeof req.body.category == 'string' && req.article.category != req.body.category) {
                 req.article.category = req.body.category;
             }
 
             req.article.save((err, article) => {
                 if (err) return utils.error(res, 422, err.message);
-                if (req.body.category && req.article.category != req.body.category)
-                    db.Category.tryToRemoveCategory(req.article.category);
-                utils.success(res, articleResponse(article));
+                if (req.body.category && req.article.category != old_category) {
+                    db.Category.tryToRemoveCategory(old_category);
+                    db.Category.setCategory(req.body.category, article, () =>
+                        utils.responseData(res, "update success!", articleResponse(article)));
+                } else {
+                    utils.responseData(res, 'update successful!', articleResponse(article));
+                }
             });
         },
+
         get(req, res) {
             const id = req.params.articleId;
             db.Article.findOne({ id }).populate("user").exec((err, article) => {
@@ -116,6 +144,7 @@ module.exports = function (mongoose, config, db) {
                     req.user && (req.user.isSuperUser() || req.user.id == article.user.id)));
             })
         },
+
         find(req, res) {
             let query = {};
             let sortBy = null;
@@ -123,12 +152,13 @@ module.exports = function (mongoose, config, db) {
             sortBy = {};
             sortBy["order_by"] = "created_at";
             sortBy["order_type"] = "desc";
-            if (req.query.title) query["title"] = req.query.title;
-            if (req.query.user_id) query["user.id"] = req.query.user_id;
-            if (req.query.keywords) query["keywords"] = { $in: req.query.keywords.split(',') }
-            if (req.query.category) query["category"] = { $in: req.query.category.split(',') }
+            if (typeof req.query.title == 'string') query["title"] = new RegExp(req.query.title, "i");
+            if (typeof req.query.content == 'string') query["content"] = new RegExp(req.query.content, "i");
+            if (typeof req.query.user_name == 'string') query["user.name"] = req.query.user_name;
+            if (req.query.keywords instanceof Array) query["keywords"] = { $in: req.query.keywords };
+            if (typeof req.query.category == 'string') query["category"] = req.query.category;
             if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
-            if (req.query.draft) query["draft"] = req.query.draft;
+            if (typeof req.query.draft == 'boolean') query["draft"] = req.query.draft;
 
             const queryRequest = db.Article.find(query);
             if (sortBy) {
@@ -148,6 +178,12 @@ module.exports = function (mongoose, config, db) {
             })
         },
 
+        keywordsPublic(req, res) {
+            keywords(req, res, true);
+        },
+
+        keywords,
+
         setupPublic(Router) {
             const articleRouter = new Router();
 
@@ -160,6 +196,8 @@ module.exports = function (mongoose, config, db) {
             articleRouter.get('/article/:articleId', this.get);
             articleRouter.get('/article/:articleId/comment', this.Comment.getAll);
             articleRouter.get('/article/:articleId/comment/:commentId', this.Comment.getSingle);
+
+            articleRouter.get('/keywords', this.keywordsPublic);
 
             return articleRouter;
         },
@@ -187,6 +225,8 @@ module.exports = function (mongoose, config, db) {
                 .post(this.Comment.create)
                 .delete(this.Comment.delete)
                 .put(utils.checkSuperUser, this.Comment.changeHideState);
+
+            articleRouter.get('/keywords', this.keywords);
 
             return articleRouter;
         },

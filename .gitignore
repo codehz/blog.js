@@ -4,6 +4,6 @@ node_modules/
 .vscode/
 request/
 uploads/
-public/*
 *.log
 *.zip
+*.swp
