@@ -28,7 +28,7 @@ module.exports = function (mongoose, config, db) {
                 db.Sequence.getNextSequence('files', (err, nextFileId) => {
                     if (err) return utils.error(res, 422, err);
                     let target_path = config.uploadPath + '/' + nextFileId + ext;
-                    fs.rename(tmp_path, target_path, err => {
+                    fs.copy(tmp_path, target_path, err => {
                         if (err) throw err;
                         fs.unlink(tmp_path, function () {
                             if (err) throw err;
@@ -71,7 +71,7 @@ module.exports = function (mongoose, config, db) {
             const id = req.params.fileId;
             let query = {};
             let sortBy = null;
-            
+
             if (id) {
                 query = { id };
             } else {
@@ -84,22 +84,22 @@ module.exports = function (mongoose, config, db) {
                 if (req.query.order_by == "name") sortBy["order_by"] = "name";
                 if (req.query.order_type === "asc") sortBy["order_type"] = req.query.order_type;
             }
-            
+
             const queryRequest = db.File.find(query);
-            
+
             if (sortBy) {
                 var sort = {};
                 sort[sortBy["order_by"]] = sortBy["order_type"] === "asc" ? "ascending" : "descending";
                 queryRequest.sort(sort);
             }
-            
+
             queryRequest.populate("user").exec((err, dbResponse) => {
                 if (err) return utils.error(res, 422, err);
                 if (!dbResponse) return utils.error(res, 404);
                 utils.responseData(res, dbResponse.count, dbResponse.map(article => fileResponse(article)));
             })
         },
-        
+
         redirect(req, res) {
             const id = req.params.fileId;
             db.File.findOne({id}, (err, file) => {
@@ -111,17 +111,17 @@ module.exports = function (mongoose, config, db) {
         },
         setupPublic(Router) {
             const fileRouter = new Router();
-            
+
             fileRouter.get('/redirect/:fileId', this.redirect);
-            
+
             return fileRouter;
         },
         setup(Router, fileUpload) {
             const fileRouter = new Router();
-            
+
             fileRouter.route('/file').get(this.get).post(utils.checkSuperUser, fileUpload.single('file'), this.upload);
             fileRouter.route('/file/:fileId').get(this.get).delete(utils.checkSuperUser, this.delete);
-            
+
             return fileRouter;
         }
     }
