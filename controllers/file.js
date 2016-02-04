@@ -23,7 +23,7 @@ module.exports = function (mongoose, config, db) {
     return {
         upload(req, res) {
             if (req.file && req.file.originalname) {
-                let ext = path.extname(req.file.originalname);
+                let ext = path.extname(req.file.originalname).toLowerCase();
                 let tmp_path = req.file.path;
                 db.Sequence.getNextSequence('files', (err, nextFileId) => {
                     if (err) return utils.error(res, 422, err);
