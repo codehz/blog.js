@@ -3,6 +3,7 @@ MAINTAINER CodeHz <CodeHz@Outlook.com>
 ENV NODE_ENV production
 ENV PORT 80
 ENV DB_BASE "mongodb://localhost/"
+ENV BLOG_JS_HOST "blogjs.net"
 
 RUN echo "root:zxcvbnm" | chpasswd
 
