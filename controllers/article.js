@@ -122,7 +122,7 @@ module.exports = function (mongoose, config, db) {
             }
 
             req.article.save((err, article) => {
-                if (err) return utils.error(res, 422, err.message);
+                if (err) return utils.error(res, 422, err);
                 if (req.body.category && req.article.category != old_category) {
                     db.Category.tryToRemoveCategory(old_category);
                     db.Category.setCategory(req.body.category, article, () =>
