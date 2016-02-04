@@ -5,6 +5,23 @@ module.exports = function (mongoose, config, db) {
         , fs = require('fs')
         , path = require('path');
 
+    function copy(source, target, cb) {
+        let cbCalled = false;
+        let rd = fs.createReadStream(source);
+        rd.on("error", done);
+
+        let wr = fs.createWriteStream(target);
+        wr.on("error", done);
+        wr.on("close", ex => cb());
+        rd.pipe(wr);
+
+        function done(err) {
+            if (cbCalled) return;
+            cb(err);
+            cbCalled = true;
+        }
+    }
+
     function fileResponse(file, _user) {
         let user = _user || file.user;
         return {
@@ -26,23 +43,23 @@ module.exports = function (mongoose, config, db) {
                 let ext = path.extname(req.file.originalname).toLowerCase();
                 let tmp_path = req.file.path;
                 db.Sequence.getNextSequence('files', (err, nextFileId) => {
-                    if (err) return utils.error(res, 422, err);
+                    if (err) return db.Sequence.SequenceRollback('files', () => utils.error(res, 422, err));
                     let target_path = config.uploadPath + '/' + nextFileId + ext;
-                    fs.copy(tmp_path, target_path, err => {
-                        if (err) throw err;
-                        fs.unlink(tmp_path, function () {
-                            if (err) throw err;
+                    copy(tmp_path, target_path, err => {
+                        if (err) return db.Sequence.SequenceRollback('files', () => utils.error(res, 422, err));
+                        fs.unlink(tmp_path, () => {
+                            if (err) return db.Sequence.SequenceRollback('files', () => utils.error(res, 422, err));
+                            const file = new db.File({
+                                id: nextFileId,
+                                name: req.file.originalname,
+                                user: req.user,
+                                ext,
+                            });
+                            file.save(err => err ?
+                                utils.error(res, 422, err) :
+                                utils.responseData(res, "update success!", fileResponse(file, req.user)));
                         });
                     });
-                    const file = new db.File({
-                        id: nextFileId,
-                        name: req.file.originalname,
-                        user: req.user,
-                        ext,
-                    });
-                    file.save(err => err ?
-                        utils.error(res, 422, err.message) :
-                        utils.responseData(res, "update success!", fileResponse(file, req.user)));
                 });
             } else {
                 utils.error(res, 422, "Are you upload some files?");
