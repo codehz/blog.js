@@ -20,7 +20,7 @@ module.exports = function (morgan) {
         if (!fn) {
             // compile
             fn = developmentFormatLine[color] = morgan.compile('\x1b['
-                + color + 'm:status\x1b[0m\t:method\t:url\t@:date[iso]\t:remote-addr\t:user-agent\x1b[0m')
+                + color + 'm:status\x1b[0m\t:method\t:url\t@:date[iso]\t:req[X-Forwarded-For]\t:user-agent\x1b[0m')
         }
 
         return fn(tokens, req, res)
